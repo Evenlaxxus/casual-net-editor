@@ -12,7 +12,7 @@ export default defineComponent({
   data: () => ({
     dataset: {
       nodes: [
-        { id: 1, x: 233, y: 513 },
+        { id: 1, x: 233, y: 514 },
         { id: 2, x: 321, y: 386 },
         { id: 3, x: 543, y: 393 },
         { id: 4, x: 452, y: 561 },
