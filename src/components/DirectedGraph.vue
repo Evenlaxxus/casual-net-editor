@@ -12,7 +12,7 @@ export default defineComponent({
   data: () => ({
     dataset: {
       nodes: [
-        { id: 1, x: 433, y: 413 },
+        { id: 1, x: 233, y: 513 },
         { id: 2, x: 321, y: 386 },
         { id: 3, x: 543, y: 393 },
         { id: 4, x: 452, y: 561 },
@@ -40,6 +40,16 @@ export default defineComponent({
     }) {
       const svg = d3.select('svg').append('g');
 
+      const RADIUS_CONST = 30;
+
+      const dots = [
+        { id: 1, source: 1, target: 2, row: 1 },
+        { id: 2, source: 1, target: 5, row: 1 },
+        { id: 3, source: 1, target: 5, row: 2 },
+      ];
+
+      const dotsLinks = [{ source: 1, target: 2 }];
+
       const link = svg
         .append('g')
         .attr('class', 'links')
@@ -53,12 +63,13 @@ export default defineComponent({
       const node = svg
         .append('g')
         .attr('class', 'nodes')
-        .selectAll('circle')
+        .selectAll('rect')
         .data(dataset.nodes)
         .enter()
-        .append('circle')
+        .append('rect')
         .style('fill', 'lightblue')
-        .attr('r', 20)
+        .attr('width', 40)
+        .attr('height', 40)
         .call(
           d3
             .drag()
@@ -75,6 +86,26 @@ export default defineComponent({
         .enter()
         .append('text')
         .text((d: any) => d.id);
+
+      const dot = svg
+        .append('g')
+        .attr('class', 'dots')
+        .selectAll('circle')
+        .data(dots)
+        .enter()
+        .append('circle')
+        .attr('r', 3)
+        .style('fill', 'black');
+
+      const dotLink = svg
+        .append('g')
+        .attr('class', 'dot-links')
+        .selectAll('path')
+        .data(dotsLinks)
+        .enter()
+        .append('path')
+        .attr('stroke', 'black')
+        .attr('fill', 'none');
 
       const simulation = forceSimulation(dataset.nodes)
         .force(
@@ -105,9 +136,75 @@ export default defineComponent({
           .attr('x2', (d: any) => d.target.x)
           .attr('y2', (d: any) => d.target.y);
 
-        node.attr('cx', (d: any) => d.x).attr('cy', (d: any) => d.y);
+        node.attr('x', (d: any) => d.x - 20).attr('y', (d: any) => d.y - 20);
 
         text.attr('x', (d: any) => d.x - 5).attr('y', (d: any) => d.y + 5);
+
+        dot
+          .attr('cx', (d: any) => {
+            const sourceNode = node.data().find((e: any) => e.id === d.source);
+            const targetNode = node.data().find((e: any) => e.id === d.target);
+            const center = [sourceNode.x, sourceNode.y];
+            const radius = RADIUS_CONST + d.row * 10;
+            const target = [targetNode.x, targetNode.y];
+
+            let v = [target[0] - center[0], target[1] - center[1]];
+            const vLen = Math.hypot(v[0], v[1]);
+            v = [v[0] / vLen, v[1] / vLen];
+            const point = [
+              center[0] + v[0] * radius,
+              center[1] + v[1] * radius,
+            ];
+            return point[0];
+          })
+          .attr('cy', (d: any) => {
+            const sourceNode = node.data().find((e: any) => e.id === d.source);
+            const targetNode = node.data().find((e: any) => e.id === d.target);
+            const center = [sourceNode.x, sourceNode.y];
+            const radius = RADIUS_CONST + d.row * 10;
+            const target = [targetNode.x, targetNode.y];
+
+            let v = [target[0] - center[0], target[1] - center[1]];
+            const vLen = Math.hypot(v[0], v[1]);
+            v = [v[0] / vLen, v[1] / vLen];
+            const point = [
+              center[0] + v[0] * radius,
+              center[1] + v[1] * radius,
+            ];
+            return point[1];
+          });
+
+        dotLink.attr('d', (d: any) => {
+          // WIP
+          const sourceDot = dot._groups[0].find(
+            (e: any) => e.__data__.id === d.source
+          );
+          const targetDot = dot._groups[0].find(
+            (e: any) => e.__data__.id === d.target
+          );
+          const sourceNode = node
+            .data()
+            .find((e: any) => e.id === sourceDot.__data__.source);
+          const curve = d3.line().curve(d3.curveNatural);
+          const sourceX = parseFloat(sourceDot.getAttribute('cx'));
+          const sourceY = parseFloat(sourceDot.getAttribute('cy'));
+          const targetX = parseFloat(targetDot.getAttribute('cx'));
+          const targetY = parseFloat(targetDot.getAttribute('cy'));
+
+          const radius = RADIUS_CONST + sourceDot.__data__.row * 10;
+
+          const a = [sourceX - sourceNode.x, sourceY, sourceNode.y];
+          const b = [targetX - sourceNode.x, targetY, sourceNode.y];
+          let m = [a[0] + b[0], a[1] + b[1]];
+          const mLen = Math.hypot(m[0], m[1]);
+          m = [m[0] / mLen, m[1] / mLen];
+          const middlePoint = [
+            sourceNode.x + m[0] * radius,
+            sourceNode.y + m[1] * radius,
+          ];
+          console.log(middlePoint);
+          return curve([[sourceX, sourceY], middlePoint, [targetX, targetY]]);
+        });
       }
 
       function dragStart(event: any, d: any) {
