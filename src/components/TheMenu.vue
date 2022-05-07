@@ -1,5 +1,5 @@
 <template>
-  <div class="header">
+  <div class="menu">
     <LoadButton />
   </div>
 </template>
@@ -16,14 +16,14 @@ export default {
 <style scoped lang="scss">
 @import 'src/style/colors.scss';
 
-.header {
+.menu {
   height: 5vh;
   width: 100%;
   background-color: $primary;
-  position: absolute;
-  top: 0;
+  position: fixed;
+  bottom: 0;
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   padding: 10px;
 }
 </style>

@@ -1,21 +1,6 @@
 import { createStore } from 'vuex';
+import { d3store, datasetStore } from './modules';
 
 export default createStore({
-  state: {
-    graphFile: File,
-  },
-  getters: {
-    graphFile: (state) => state.graphFile,
-  },
-  mutations: {
-    SET_GRAPH_FILE(state, file) {
-      state.graphFile = file;
-    },
-  },
-  actions: {
-    setGraphFile({ commit }, file) {
-      commit('SET_GRAPH_FILE', file);
-    },
-  },
-  modules: {},
+  modules: { d3store, datasetStore },
 });
