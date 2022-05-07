@@ -6,6 +6,7 @@
 import { defineComponent } from 'vue';
 import * as d3 from 'd3';
 import { forceSimulation } from 'd3-force';
+import { Node, Link, Dot } from '@/utils/types';
 
 export default defineComponent({
   name: 'DirectedGraph',
@@ -34,10 +35,7 @@ export default defineComponent({
     this.generateGraph(this.dataset);
   },
   methods: {
-    generateGraph(dataset: {
-      nodes: Array<{ id: number; x: number; y: number }>;
-      links: Array<{ source: number; target: number }>;
-    }) {
+    generateGraph(dataset: { nodes: Array<Node>; links: Array<Link> }) {
       const svg = d3.select('svg').append('g');
 
       const RADIUS_CONST = 30;
@@ -141,7 +139,7 @@ export default defineComponent({
         text.attr('x', (d: any) => d.x - 5).attr('y', (d: any) => d.y + 5);
 
         dot
-          .attr('cx', (d: any) => {
+          .attr('cx', (d: Dot) => {
             const sourceNode = node.data().find((e: any) => e.id === d.source);
             const targetNode = node.data().find((e: any) => e.id === d.target);
             const center = [sourceNode.x, sourceNode.y];
@@ -157,7 +155,7 @@ export default defineComponent({
             ];
             return point[0];
           })
-          .attr('cy', (d: any) => {
+          .attr('cy', (d: Dot) => {
             const sourceNode = node.data().find((e: any) => e.id === d.source);
             const targetNode = node.data().find((e: any) => e.id === d.target);
             const center = [sourceNode.x, sourceNode.y];
@@ -174,8 +172,7 @@ export default defineComponent({
             return point[1];
           });
 
-        dotLink.attr('d', (d: any) => {
-          // WIP
+        dotLink.attr('d', (d: Link) => {
           const sourceDot = dot._groups[0].find(
             (e: any) => e.__data__.id === d.source
           );
@@ -193,8 +190,8 @@ export default defineComponent({
 
           const radius = RADIUS_CONST + sourceDot.__data__.row * 10;
 
-          const a = [sourceX - sourceNode.x, sourceY, sourceNode.y];
-          const b = [targetX - sourceNode.x, targetY, sourceNode.y];
+          const a = [sourceX - sourceNode.x, sourceY - sourceNode.y];
+          const b = [targetX - sourceNode.x, targetY - sourceNode.y];
           let m = [a[0] + b[0], a[1] + b[1]];
           const mLen = Math.hypot(m[0], m[1]);
           m = [m[0] / mLen, m[1] / mLen];
@@ -202,7 +199,6 @@ export default defineComponent({
             sourceNode.x + m[0] * radius,
             sourceNode.y + m[1] * radius,
           ];
-          console.log(middlePoint);
           return curve([[sourceX, sourceY], middlePoint, [targetX, targetY]]);
         });
       }

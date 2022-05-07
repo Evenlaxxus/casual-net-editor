@@ -8,7 +8,7 @@
 import LoadButton from '@/components/LoadButton';
 
 export default {
-  name: 'TheHeader',
+  name: 'TheMenu',
   components: { LoadButton },
 };
 </script>
