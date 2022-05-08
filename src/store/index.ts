@@ -1,6 +1,6 @@
 import { createStore } from 'vuex';
-import { d3store, datasetStore } from './modules';
+import { d3store, datasetStore, toolbarStore } from './modules';
 
 export default createStore({
-  modules: { d3store, datasetStore },
+  modules: { d3store, datasetStore, toolbarStore },
 });

@@ -1,6 +1,13 @@
 import * as d3 from 'd3';
 import { forceSimulation } from 'd3-force';
 import { HEIGHT, WIDTH } from '@/utils/consts';
+import {
+  D3DragEvent,
+  Simulation,
+  SimulationNodeDatum,
+  SubjectPosition,
+} from 'd3';
+import { Link, Node } from '@/utils/types';
 
 export const d3store = {
   state: () => ({
@@ -112,13 +119,9 @@ export const d3store = {
           .call(
             d3
               .drag()
-              .on('start', (event: any, d: any) =>
-                dragStart(event, d, state.simulation)
-              )
+              .on('start', dragStart(state.simulation))
               .on('drag', dragged)
-              .on('end', (event: any, d: any) =>
-                dragEnd(event, d, state.simulation)
-              )
+              .on('end', dragEnd(state.simulation))
           )
       );
     },
@@ -148,7 +151,7 @@ export const d3store = {
           .data(state.dataset.nodes)
           .enter()
           .append('text')
-          .text((d: any) => d.id)
+          .text((d: Node) => d.id)
       );
     },
 
@@ -179,19 +182,32 @@ export const d3store = {
   },
 };
 
-function dragStart(event: any, d: any, simulation: any) {
-  if (!event.active) simulation.alphaTarget(0.3).restart();
-  d.fy = d.y;
-  d.fx = d.x;
+function dragStart(simulation: Simulation<SimulationNodeDatum, Link>) {
+  return (
+    event: D3DragEvent<SVGRectElement, SimulationNodeDatum, SubjectPosition>,
+    d: any
+  ) => {
+    if (!event.active) simulation.alphaTarget(0.3).restart();
+    d.fy = d.y;
+    d.fx = d.x;
+  };
 }
 
-function dragged(event: any, d: any) {
+function dragged(
+  event: D3DragEvent<SVGRectElement, SimulationNodeDatum, SubjectPosition>,
+  d: any
+) {
   d.fx = event.x;
   d.fy = event.y;
 }
 
-function dragEnd(event: any, d: any, simulation: any) {
-  if (!event.active) simulation.alphaTarget(0);
-  d.fx = null;
-  d.fy = null;
+function dragEnd(simulation: Simulation<SimulationNodeDatum, Link>) {
+  return (
+    event: D3DragEvent<SVGRectElement, SimulationNodeDatum, SubjectPosition>,
+    d: any
+  ) => {
+    if (!event.active) simulation.alphaTarget(0);
+    d.fx = null;
+    d.fy = null;
+  };
 }

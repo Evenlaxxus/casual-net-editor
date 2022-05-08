@@ -4,5 +4,3 @@ declare module '*.vue' {
   const component: DefineComponent<{}, {}, any>
   export default component
 }
-declare module 'd3';
-declare module 'd3-force';

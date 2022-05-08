@@ -1,5 +1,6 @@
 <template>
   <TheMenu />
+  <TheToolbar />
   <DirectedGraph />
 </template>
 
@@ -7,17 +8,21 @@
 import { defineComponent } from 'vue';
 import DirectedGraph from './components/DirectedGraph.vue';
 import TheMenu from '@/components/TheMenu.vue';
+import TheToolbar from '@/components/TheToolbar.vue';
 
 export default defineComponent({
   name: 'App',
   components: {
+    TheToolbar,
     TheMenu,
     DirectedGraph,
   },
 });
 </script>
 
-<style>
+<style lang="scss">
+@import 'src/style/colors';
+
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -28,5 +33,21 @@ export default defineComponent({
 
 body {
   margin: 0;
+}
+
+.base-button {
+  background-color: $primary;
+  color: $text-color;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 2px 2px 0 rgba(0, 0, 0, 0.14),
+    0 1px 5px 0 rgba(0, 0, 0, 0.12);
+
+  &:hover,
+  &:focus {
+    background-color: $light;
+  }
 }
 </style>

@@ -1,15 +1,20 @@
 <template>
   <div class="menu">
     <LoadButton />
+    <button class="base-button" @click="setIsToolbarVisible(true)">test</button>
   </div>
 </template>
 
 <script>
-import LoadButton from '@/components/LoadButton';
+import LoadButton from '@/components/buttons/LoadButton';
+import { mapActions } from 'vuex';
 
 export default {
   name: 'TheMenu',
   components: { LoadButton },
+  methods: {
+    ...mapActions(['setIsToolbarVisible']),
+  },
 };
 </script>
 
@@ -19,11 +24,11 @@ export default {
 .menu {
   height: 5vh;
   width: 100%;
-  background-color: $primary;
   position: fixed;
   bottom: 0;
-  display: flex;
   justify-content: center;
   padding: 10px;
+  display: flex;
+  gap: 0 10px;
 }
 </style>

@@ -15,3 +15,7 @@ export type Dot = {
   target: number;
   row: number;
 };
+
+export interface HTMLInputEvent extends InputEvent {
+  target: HTMLInputElement & EventTarget;
+}

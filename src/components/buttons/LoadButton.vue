@@ -5,15 +5,15 @@
       class="load-button__input"
       @change="onFileChange($event)"
       type="file"
+      accept="application/json"
     />
-    <button class="load-button__button" @click="$refs.file.click()">
-      Load model
-    </button>
+    <button class="base-button" @click="$refs.file.click()">Load model</button>
   </div>
 </template>
 
 <script lang="ts">
 import { mapGetters, mapActions } from 'vuex';
+import { HTMLInputEvent } from '@/utils/types';
 
 export default {
   name: 'LoadButton',
@@ -22,15 +22,15 @@ export default {
   },
   methods: {
     ...mapActions(['setGraphFile']),
-    onFileChange(e: any) {
-      let files = e.target.files || e.dataTransfer.files;
-      if (!files.length) return;
+    onFileChange(e: HTMLInputEvent) {
+      let files = e?.target?.files || e?.dataTransfer?.files;
+      if (!files?.length) return;
       this.readFile(files[0]);
     },
     readFile(file: Blob) {
       let reader = new FileReader();
-      reader.onload = (e: any) => {
-        this.setGraphFile(JSON.parse(e.target.result));
+      reader.onload = (e: ProgressEvent<FileReader>) => {
+        this.setGraphFile(JSON.parse(e?.target?.result as string));
       };
       reader.readAsText(file);
     },
@@ -39,20 +39,11 @@ export default {
 </script>
 
 <style scoped lang="scss">
-@import 'src/style/colors';
+@import '../../style/colors';
 
 .load-button {
   &__input {
     display: none;
-  }
-
-  &__button {
-    background-color: $light;
-    color: $text-color;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 6px;
-    cursor: pointer;
   }
 }
 </style>
