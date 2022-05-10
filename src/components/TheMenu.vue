@@ -11,28 +11,29 @@
 </template>
 
 <script lang="ts">
+import { defineComponent } from 'vue';
 import LoadButton from '@/components/buttons/LoadButton.vue';
 import { mapActions, mapGetters } from 'vuex';
 
-export default {
+export default defineComponent({
   name: 'TheMenu',
   components: { LoadButton },
   computed: {
-    ...mapGetters(['node', 'svg', 'dataset']),
+    ...mapGetters(['node', 'svg', 'dataset', '']),
   },
   methods: {
     ...mapActions(['insertNode']),
     addNode() {
       this.insertNode({ id: 7, x: 645, y: 565 });
 
-      // this.svg
-      //   .select('g.nodes')
-      //   .selectAll('rect')
-      //   .data(this.dataset.nodes)
-      //   .enter()
-      //   .on('click', (e, d) => {
-      //     console.log('test');
-      //   });
+      this.svg
+        .select('g.nodes')
+        .selectAll('rect')
+        .data(this.dataset.nodes)
+        .enter()
+        .on('click', (e, d) => {
+          console.log('test');
+        });
 
       // console.log(this.node.data(d => d))
       // this.node.each((d) => {
@@ -58,7 +59,7 @@ export default {
       console.log('delete binding');
     },
   },
-};
+});
 </script>
 
 <style scoped lang="scss">

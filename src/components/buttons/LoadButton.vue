@@ -12,10 +12,11 @@
 </template>
 
 <script lang="ts">
+import { defineComponent } from 'vue';
 import { mapGetters, mapActions } from 'vuex';
 import { HTMLInputEvent } from '@/utils/types';
 
-export default {
+export default defineComponent({
   name: 'LoadButton',
   computed: {
     ...mapGetters(['graphFile']),
@@ -35,7 +36,7 @@ export default {
       reader.readAsText(file);
     },
   },
-};
+});
 </script>
 
 <style scoped lang="scss">
