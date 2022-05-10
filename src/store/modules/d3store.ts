@@ -43,6 +43,7 @@ export const d3store = {
     dot: null,
     nodeIdText: null,
     dotLinks: null,
+    selectedNode: null,
   }),
   mutations: {
     SET_SVG(state, payload) {
@@ -66,10 +67,35 @@ export const d3store = {
     SET_DOT_LINKS(state, payload) {
       state.dotLinks = payload;
     },
+    SET_SELECTED_NODE(state, payload) {
+      state.selectedNode = payload;
+    },
+    ADD_NODE(state, payload) {
+      state.dataset.nodes = [...state.dataset.nodes, payload];
+      state.svg
+        .select('g.nodes')
+        .selectAll('rect')
+        .data(state.dataset.nodes)
+        .enter()
+        .append('rect')
+        .attr('id', payload.id)
+        .style('fill', 'lightblue')
+        .attr('width', 40)
+        .attr('height', 40)
+        .attr('x', payload.x)
+        .attr('y', payload.y)
+        .call(
+          d3
+            .drag()
+            .on('start', dragStart(state.simulation))
+            .on('drag', dragged)
+            .on('end', dragEnd(state.simulation))
+        );
+    },
   },
   actions: {
     setSvg({ commit }, selector) {
-      commit('SET_SVG', d3.select(selector).append('g'));
+      commit('SET_SVG', d3.select(selector));
     },
 
     initSimulation({ commit, state }) {
@@ -169,6 +195,13 @@ export const d3store = {
           .attr('fill', 'none')
       );
     },
+
+    setSelectedNode({ commit }, payload) {
+      commit('SET_SELECTED_NODE', payload);
+    },
+    insertNode({ commit }, payload) {
+      commit('ADD_NODE', payload);
+    },
   },
   getters: {
     svg: (state) => state.svg,
@@ -179,6 +212,7 @@ export const d3store = {
     dot: (state) => state.dot,
     nodeIdText: (state) => state.nodeIdText,
     dotLinks: (state) => state.dotLinks,
+    selectedNode: (state) => state.selectedNode,
   },
 };
 
