@@ -1,5 +1,5 @@
 import * as d3 from 'd3';
-import { D3DragEvent, SimulationNodeDatum, SubjectPosition } from 'd3';
+import { D3DragEvent, SubjectPosition } from 'd3';
 import { Dot, Link, Node } from '@/utils/types';
 const RADIUS_CONST = 30;
 export const d3store = {
@@ -60,26 +60,14 @@ export const d3store = {
       state.selectedNode = payload;
     },
     ADD_NODE(state, payload) {
-      state.dataset.nodes = [...state.dataset.nodes, payload];
-      state.svg
-        .select('g.nodes')
-        .selectAll('rect')
-        .data(state.dataset.nodes)
-        .enter()
-        .append('rect')
-        .attr('id', payload.id)
-        .style('fill', 'lightblue')
-        .attr('width', 40)
-        .attr('height', 40)
-        .attr('x', payload.x)
-        .attr('y', payload.y)
-        .call(
-          d3
-            .drag()
-            .on('start', dragStart)
-            .on('drag', dragged)
-            .on('end', dragEnd)
-        );
+      state.dataset.nodes = [
+        ...state.dataset.nodes.flat().map((e) => ({
+          id: e.id,
+          x: e.x,
+          y: e.y,
+        })),
+        payload,
+      ];
     },
   },
   actions: {
@@ -129,6 +117,7 @@ export const d3store = {
           .enter()
           .append('rect')
           .style('fill', 'lightblue')
+          .style('cursor', 'pointer')
           .attr('width', 40)
           .attr('height', 40)
           .attr('x', (d: any) => (d.x as number) - 20)
@@ -140,6 +129,16 @@ export const d3store = {
               .on('drag', dragged)
               .on('end', dragEnd)
           )
+          .on('click', function (this: any, e: PointerEvent, d: any) {
+            state.node.style('fill', 'lightblue');
+            if (state.selectedNode === d.id) {
+              d3.select(this).style('fill', 'lightblue');
+              commit('SET_SELECTED_NODE', null);
+            } else {
+              d3.select(this).style('fill', 'red');
+              commit('SET_SELECTED_NODE', d.id);
+            }
+          })
       );
     },
 
@@ -201,8 +200,53 @@ export const d3store = {
     setSelectedNode({ commit }, payload) {
       commit('SET_SELECTED_NODE', payload);
     },
-    insertNode({ commit }, payload) {
+    insertNode({ commit, state }, payload) {
       commit('ADD_NODE', payload);
+      commit(
+        'SET_NODE',
+        state.svg
+          .select('g.nodes')
+          .selectAll('rect')
+          .data(state.dataset.nodes)
+          .enter()
+          .append('rect')
+          .attr('id', payload.id)
+          .style('fill', 'lightblue')
+          .style('cursor', 'pointer')
+          .attr('width', 40)
+          .attr('height', 40)
+          .attr('x', payload.x - 20)
+          .attr('y', payload.y - 20)
+          .call(
+            d3
+              .drag()
+              .on('start', dragStart)
+              .on('drag', dragged)
+              .on('end', dragEnd)
+          )
+          .on('click', function (this: any, e: PointerEvent, d: any) {
+            state.node.style('fill', 'lightblue');
+            if (state.selectedNode === d.id) {
+              d3.select(this).style('fill', 'lightblue');
+              commit('SET_SELECTED_NODE', null);
+            } else {
+              d3.select(this).style('fill', 'red');
+              commit('SET_SELECTED_NODE', d.id);
+            }
+          })
+      );
+      commit(
+        'SET_NODE_ID_TEXT',
+        state.svg
+          .select('g.text')
+          .selectAll('text')
+          .data(state.dataset.nodes)
+          .enter()
+          .append('text')
+          .text((d: Node) => d.id)
+          .attr('x', (d: any) => (d.x as number) - 5)
+          .attr('y', (d: any) => (d.y as number) + 5)
+      );
     },
   },
   getters: {
@@ -221,7 +265,6 @@ function dragStart(
   event: D3DragEvent<SVGRectElement, any, SubjectPosition>,
   d: any
 ) {
-  console.log(d);
   d.fy = d.y;
   d.fx = d.x;
 }
@@ -230,7 +273,6 @@ function dragged(
   event: D3DragEvent<SVGRectElement, any, SubjectPosition>,
   d: any
 ) {
-  console.log(d);
   d.fx = event.x;
   d.fy = event.y;
 }

@@ -46,5 +46,9 @@ body {
   &:focus {
     background-color: $light;
   }
+  &:disabled {
+    background-color: #e1e2e1;
+    cursor: auto;
+  }
 }
 </style>
