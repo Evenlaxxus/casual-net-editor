@@ -11,7 +11,7 @@
 </template>
 
 <script lang="ts">
-import LoadButton from '@/components/buttons/LoadButton';
+import LoadButton from '@/components/buttons/LoadButton.vue';
 import { mapActions, mapGetters } from 'vuex';
 
 export default {
