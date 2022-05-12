@@ -1,7 +1,14 @@
 import * as d3 from 'd3';
 import { D3DragEvent, SubjectPosition } from 'd3';
 import { Dot, Link, Node } from '@/utils/types';
-const RADIUS_CONST = 30;
+import {
+  RADIUS_CONST,
+  STROKE_WIDTH,
+  DOT_SIZE,
+  NODE_WIDTH,
+  NODE_HEIGHT,
+} from '@/utils/consts';
+
 export const d3store = {
   state: () => ({
     svg: null,
@@ -15,13 +22,13 @@ export const d3store = {
         { id: 6, x: 545, y: 465 },
       ],
       links: [
-        { source: 1, target: 5 },
-        { source: 4, target: 5 },
-        { source: 4, target: 6 },
-        { source: 3, target: 2 },
-        { source: 5, target: 2 },
-        { source: 1, target: 2 },
-        { source: 3, target: 4 },
+        { id: 1, source: 1, target: 5 },
+        { id: 2, source: 4, target: 5 },
+        { id: 3, source: 4, target: 6 },
+        { id: 4, source: 3, target: 2 },
+        { id: 5, source: 5, target: 2 },
+        { id: 6, source: 1, target: 2 },
+        { id: 7, source: 3, target: 4 },
       ],
       dots: [
         { id: 1, source: 1, target: 2, row: 1 },
@@ -36,38 +43,186 @@ export const d3store = {
     nodeIdText: null,
     dotLinks: null,
     selectedNode: null,
+    selectedTargetNodes: [],
   }),
   mutations: {
     SET_SVG(state, payload) {
       state.svg = payload;
+      state.svg.append('g').attr('class', 'links');
+      state.svg.append('g').attr('class', 'nodes');
+      state.svg.append('g').attr('class', 'dots');
+      state.svg.append('g').attr('class', 'text');
+      state.svg.append('g').attr('class', 'dot-links');
     },
-    SET_LINK(state, payload) {
-      state.link = payload;
+    SET_LINK(state) {
+      state.link = state.svg
+        .select('g.links')
+        .selectAll('line')
+        .data(state.dataset.links)
+        .enter()
+        .append('line')
+        .attr('id', (d: Link) => 'link' + d.id)
+        .attr('stroke', 'black')
+        .attr('stroke-width', STROKE_WIDTH)
+        .attr(
+          'x1',
+          (d: Link) => state.dataset.nodes.find((e) => e.id === d.source).x
+        )
+        .attr(
+          'y1',
+          (d: Link) => state.dataset.nodes.find((e) => e.id === d.source).y
+        )
+        .attr(
+          'x2',
+          (d: Link) => state.dataset.nodes.find((e) => e.id === d.target).x
+        )
+        .attr(
+          'y2',
+          (d: Link) => state.dataset.nodes.find((e) => e.id === d.target).y
+        );
     },
-    SET_NODE(state, payload) {
-      state.node = payload;
+    SET_NODE(state) {
+      state.node = state.svg
+        .select('g.nodes')
+        .selectAll('rect')
+        .data(state.dataset.nodes)
+        .enter()
+        .append('rect')
+        .style('fill', 'lightblue')
+        .style('cursor', 'pointer')
+        .attr('id', (d: Node) => 'node' + d.id)
+        .attr('width', NODE_WIDTH)
+        .attr('height', NODE_HEIGHT)
+        .attr('x', (d: Node) => (d.x as number) - NODE_WIDTH / 2)
+        .attr('y', (d: Node) => (d.y as number) - NODE_HEIGHT / 2)
+        .call(
+          d3
+            .drag()
+            .on('start', dragStart)
+            .on('drag', dragged)
+            .on('end', dragEnd)
+        )
+        .on('click', function (this: any, e: PointerEvent, d: Node) {
+          state.svg
+            .select('#node' + state.selectedNode)
+            .style('fill', 'lightblue');
+          if (state.selectedNode === d.id) {
+            d3.select(this).style('fill', 'lightblue');
+            state.selectedNode = null;
+          } else {
+            d3.select(this).style('fill', 'red');
+            state.selectedNode = d.id;
+          }
+        });
     },
-    SET_DOT(state, payload) {
-      state.dot = payload;
+    SET_DOT(state) {
+      state.dot = state.svg
+        .select('g.dots')
+        .selectAll('circle')
+        .data(state.dataset.dots)
+        .enter()
+        .append('circle')
+        .attr('r', DOT_SIZE)
+        .style('fill', 'black')
+        .attr('cx', (d: Dot) =>
+          setDotPosition(d, 'X', RADIUS_CONST, state.node)
+        )
+        .attr('cy', (d: Dot) =>
+          setDotPosition(d, 'Y', RADIUS_CONST, state.node)
+        );
     },
-    SET_NODE_ID_TEXT(state, payload) {
-      state.nodeIdText = payload;
+    SET_NODE_ID_TEXT(state) {
+      state.nodeIdText = state.svg
+        .select('g.text')
+        .selectAll('text')
+        .data(state.dataset.nodes)
+        .enter()
+        .append('text')
+        .text((d: Node) => d.id)
+        .attr('x', (d: Node) => (d.x as number) - 5)
+        .attr('y', (d: Node) => (d.y as number) + 5);
     },
-    SET_DOT_LINKS(state, payload) {
-      state.dotLinks = payload;
+    SET_DOT_LINKS(state) {
+      state.dotLinks = state.svg
+        .select('g.dot-links')
+        .selectAll('path')
+        .data(state.dataset.dotsLinks)
+        .enter()
+        .append('path')
+        .attr('stroke', 'black')
+        .attr('stroke-width', STROKE_WIDTH)
+        .attr('fill', 'none')
+        .attr('d', (d: Link) =>
+          setDotsArc(d, state.dot, state.node, RADIUS_CONST)
+        );
     },
     SET_SELECTED_NODE(state, payload) {
       state.selectedNode = payload;
     },
+    CHANGE_ON_CLICK_TO_TARGET_NODES(state) {
+      state.node.on('click', function (this: any, e: PointerEvent, d: Node) {
+        if (state.selectedTargetNodes.includes(d.id)) {
+          d3.select(this).style('fill', 'lightblue');
+          state.selectedTargetNodes = state.selectedTargetNodes.filter(
+            (element) => element !== d.id
+          );
+        } else {
+          d3.select(this).style('fill', 'green');
+          state.selectedTargetNodes.push(d.id);
+        }
+      });
+    },
+    CHANGE_ON_CLICK_TO_DEFAULT(state) {
+      state.node.on('click', function (this: any, e: PointerEvent, d: Node) {
+        state.svg
+          .select('#node' + state.selectedNode)
+          .style('fill', 'lightblue');
+        if (state.selectedNode === d.id) {
+          d3.select(this).style('fill', 'lightblue');
+          state.selectedNode = null;
+        } else {
+          d3.select(this).style('fill', 'red');
+          state.selectedNode = d.id;
+        }
+      });
+    },
+    SET_SELECTED_TARGET_NODE(state, payload) {
+      state.selectedTargetNodes = payload;
+    },
+    ADD_SELECTED_TARGET_NODE(state, payload) {
+      state.selectedTargetNodes.push(payload);
+    },
     ADD_NODE(state, payload) {
-      state.dataset.nodes = [
-        ...state.dataset.nodes.flat().map((e) => ({
-          id: e.id,
-          x: e.x,
-          y: e.y,
-        })),
-        payload,
-      ];
+      state.dataset.nodes.push(payload);
+    },
+    ADD_LINK(state, payload) {
+      state.dataset.links.push(payload);
+    },
+    REMOVE_NODE(state, payload) {
+      state.dataset.nodes = state.dataset.nodes.filter((e) => e.id !== payload);
+      state.dataset.links = state.dataset.links.filter(
+        (e) => e.source !== payload && e.target !== payload
+      );
+      state.dataset.dots = state.dataset.dots.filter(
+        (e) => e.source !== payload && e.target !== payload
+      );
+      const dotsIds = state.dataset.dots.map((e) => e.id);
+      state.dataset.dotsLinks = state.dataset.dotsLinks.filter(
+        (e) => dotsIds.includes(e.source) || dotsIds.includes(e.target)
+      );
+    },
+    REMOVE_LINK(state, payload) {
+      const { source: sourceNode, target: targetNode } =
+        state.dataset.links.find((e) => (e.id = payload));
+      state.dataset.links = state.dataset.links.filter((e) => e.id !== payload);
+      state.dataset.dots = state.dataset.dots.filter(
+        (e) => e.source !== sourceNode && e.target !== targetNode
+      );
+      const dotsIds = state.dataset.dots.map((e) => e.id);
+      state.dataset.dotsLinks = state.dataset.dotsLinks.filter(
+        (e) => dotsIds.includes(e.source) || dotsIds.includes(e.target)
+      );
+      state.svg.select('link' + payload).remove();
     },
   },
   actions: {
@@ -75,178 +230,72 @@ export const d3store = {
       commit('SET_SVG', d3.select(selector));
     },
 
-    initLink({ commit, state }) {
-      commit(
-        'SET_LINK',
-        state.svg
-          .append('g')
-          .attr('class', 'links')
-          .selectAll('line')
-          .data(state.dataset.links)
-          .enter()
-          .append('line')
-          .attr('stroke', 'black')
-          .attr('stroke-width', 1)
-          .attr(
-            'x1',
-            (d: any) => state.dataset.nodes.find((e) => e.id === d.source).x
-          )
-          .attr(
-            'y1',
-            (d: any) => state.dataset.nodes.find((e) => e.id === d.source).y
-          )
-          .attr(
-            'x2',
-            (d: any) => state.dataset.nodes.find((e) => e.id === d.target).x
-          )
-          .attr(
-            'y2',
-            (d: any) => state.dataset.nodes.find((e) => e.id === d.target).y
-          )
-      );
+    initLink({ commit }) {
+      commit('SET_LINK');
     },
 
-    initNode({ commit, state }) {
-      commit(
-        'SET_NODE',
-        state.svg
-          .append('g')
-          .attr('class', 'nodes')
-          .selectAll('rect')
-          .data(state.dataset.nodes)
-          .enter()
-          .append('rect')
-          .style('fill', 'lightblue')
-          .style('cursor', 'pointer')
-          .attr('width', 40)
-          .attr('height', 40)
-          .attr('x', (d: any) => (d.x as number) - 20)
-          .attr('y', (d: any) => (d.y as number) - 20)
-          .call(
-            d3
-              .drag()
-              .on('start', dragStart)
-              .on('drag', dragged)
-              .on('end', dragEnd)
-          )
-          .on('click', function (this: any, e: PointerEvent, d: any) {
-            state.node.style('fill', 'lightblue');
-            if (state.selectedNode === d.id) {
-              d3.select(this).style('fill', 'lightblue');
-              commit('SET_SELECTED_NODE', null);
-            } else {
-              d3.select(this).style('fill', 'red');
-              commit('SET_SELECTED_NODE', d.id);
-            }
-          })
-      );
+    initNode({ commit }) {
+      commit('SET_NODE');
     },
 
-    initDots({ commit, state }) {
-      commit(
-        'SET_DOT',
-        state.svg
-          .append('g')
-          .attr('class', 'dots')
-          .selectAll('circle')
-          .data(state.dataset.dots)
-          .enter()
-          .append('circle')
-          .attr('r', 3)
-          .style('fill', 'black')
-          .attr('cx', (d: Dot) =>
-            setDotPosition(d, 'X', RADIUS_CONST, state.node)
-          )
-          .attr('cy', (d: Dot) =>
-            setDotPosition(d, 'Y', RADIUS_CONST, state.node)
-          )
-      );
+    initDots({ commit }) {
+      commit('SET_DOT');
     },
 
-    initNodeIdText({ commit, state }) {
-      commit(
-        'SET_NODE_ID_TEXT',
-        state.svg
-          .append('g')
-          .attr('class', 'text')
-          .selectAll('text')
-          .data(state.dataset.nodes)
-          .enter()
-          .append('text')
-          .text((d: Node) => d.id)
-          .attr('x', (d: any) => (d.x as number) - 5)
-          .attr('y', (d: any) => (d.y as number) + 5)
-      );
+    initNodeIdText({ commit }) {
+      commit('SET_NODE_ID_TEXT');
     },
 
-    initDotLinks({ commit, state }) {
-      commit(
-        'SET_DOT_LINKS',
-        state.svg
-          .append('g')
-          .attr('class', 'dot-links')
-          .selectAll('path')
-          .data(state.dataset.dotsLinks)
-          .enter()
-          .append('path')
-          .attr('stroke', 'black')
-          .attr('fill', 'none')
-          .attr('d', (d: Link) =>
-            setDotsArc(d, state.dot, state.node, RADIUS_CONST)
-          )
-      );
+    initDotLinks({ commit }) {
+      commit('SET_DOT_LINKS');
     },
 
     setSelectedNode({ commit }, payload) {
       commit('SET_SELECTED_NODE', payload);
     },
-    insertNode({ commit, state }, payload) {
+
+    setSelectedTargetNodes({ commit }, payload) {
+      commit('SET_SELECTED_TARGET_NODE', payload);
+    },
+
+    changeOnClickToTargetNodes({ commit }) {
+      commit('CHANGE_ON_CLICK_TO_TARGET_NODES');
+    },
+
+    changeOnClickToDefault({ commit }) {
+      commit('CHANGE_ON_CLICK_TO_DEFAULT');
+    },
+
+    addSelectedTargetNodes({ commit }, payload) {
+      commit('ADD_SELECTED_TARGET_NODE', payload);
+    },
+
+    insertNode({ commit }, payload) {
       commit('ADD_NODE', payload);
-      commit(
-        'SET_NODE',
-        state.svg
-          .select('g.nodes')
-          .selectAll('rect')
-          .data(state.dataset.nodes)
-          .enter()
-          .append('rect')
-          .attr('id', payload.id)
-          .style('fill', 'lightblue')
-          .style('cursor', 'pointer')
-          .attr('width', 40)
-          .attr('height', 40)
-          .attr('x', payload.x - 20)
-          .attr('y', payload.y - 20)
-          .call(
-            d3
-              .drag()
-              .on('start', dragStart)
-              .on('drag', dragged)
-              .on('end', dragEnd)
-          )
-          .on('click', function (this: any, e: PointerEvent, d: any) {
-            state.node.style('fill', 'lightblue');
-            if (state.selectedNode === d.id) {
-              d3.select(this).style('fill', 'lightblue');
-              commit('SET_SELECTED_NODE', null);
-            } else {
-              d3.select(this).style('fill', 'red');
-              commit('SET_SELECTED_NODE', d.id);
-            }
-          })
-      );
-      commit(
-        'SET_NODE_ID_TEXT',
-        state.svg
-          .select('g.text')
-          .selectAll('text')
-          .data(state.dataset.nodes)
-          .enter()
-          .append('text')
-          .text((d: Node) => d.id)
-          .attr('x', (d: any) => (d.x as number) - 5)
-          .attr('y', (d: any) => (d.y as number) + 5)
-      );
+      commit('SET_NODE');
+      commit('SET_NODE_ID_TEXT');
+    },
+
+    insertLink({ commit }, payload) {
+      commit('ADD_LINK', payload);
+      commit('SET_LINK');
+    },
+
+    removeNode({ commit }, payload) {
+      commit('REMOVE_NODE', payload);
+      commit('SET_SELECTED_NODE', null);
+      commit('SET_NODE');
+      commit('SET_NODE_ID_TEXT');
+      commit('SET_LINK');
+      commit('SET_DOT');
+      commit('SET_DOT_LINKS');
+    },
+
+    removeLink({ commit }, payload) {
+      commit('REMOVE_LINK', payload);
+      commit('SET_LINK');
+      commit('SET_DOT');
+      commit('SET_DOT_LINKS');
     },
   },
   getters: {
@@ -258,6 +307,8 @@ export const d3store = {
     nodeIdText: (state) => state.nodeIdText,
     dotLinks: (state) => state.dotLinks,
     selectedNode: (state) => state.selectedNode,
+    selectedTargetNodes: (state) => state.selectedTargetNodes,
+    getNodeById: (state) => (id) => state.svg.select(id),
   },
 };
 

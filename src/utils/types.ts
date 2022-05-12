@@ -5,6 +5,7 @@ export type Node = {
 };
 
 export type Link = {
+  id: number;
   source: number;
   target: number;
 };
