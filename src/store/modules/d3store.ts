@@ -35,7 +35,7 @@ export const d3store = {
         { id: 2, source: 1, target: 5, row: 1 },
         { id: 3, source: 1, target: 5, row: 2 },
       ],
-      dotsLinks: [{ source: 1, target: 2 }],
+      dotsLinks: [{ id: 1, source: 1, target: 2 }],
     },
     link: null,
     node: null,
@@ -122,6 +122,7 @@ export const d3store = {
         .data(state.dataset.dots)
         .enter()
         .append('circle')
+        .attr('id', (d: Dot) => 'dot' + d.id)
         .attr('r', DOT_SIZE)
         .style('fill', 'black')
         .attr('cx', (d: Dot) =>
@@ -139,6 +140,7 @@ export const d3store = {
         .enter()
         .append('text')
         .text((d: Node) => d.id)
+        .attr('id', (d: Node) => 'text' + d.id)
         .attr('x', (d: Node) => (d.x as number) - 5)
         .attr('y', (d: Node) => (d.y as number) + 5);
     },
@@ -149,6 +151,7 @@ export const d3store = {
         .data(state.dataset.dotsLinks)
         .enter()
         .append('path')
+        .attr('id', (d: Link) => 'dot-link' + d.id)
         .attr('stroke', 'black')
         .attr('stroke-width', STROKE_WIDTH)
         .attr('fill', 'none')
@@ -200,15 +203,43 @@ export const d3store = {
     },
     REMOVE_NODE(state, payload) {
       state.dataset.nodes = state.dataset.nodes.filter((e) => e.id !== payload);
-      state.dataset.links = state.dataset.links.filter(
+      state.svg.selectAll('#node' + payload).remove();
+      state.svg.selectAll('#text' + payload).remove();
+
+      const remainingLinks = state.dataset.links.filter(
         (e) => e.source !== payload && e.target !== payload
       );
-      state.dataset.dots = state.dataset.dots.filter(
+
+      const linksToRemove = state.dataset.links.filter(
+        (e) => !remainingLinks.includes(e.id)
+      );
+
+      state.dataset.links = remainingLinks;
+      linksToRemove.map((e) => state.svg.selectAll('#link' + e.id).remove());
+
+      const remainingDotsIds = state.dataset.dots.filter(
         (e) => e.source !== payload && e.target !== payload
       );
-      const dotsIds = state.dataset.dots.map((e) => e.id);
-      state.dataset.dotsLinks = state.dataset.dotsLinks.filter(
-        (e) => dotsIds.includes(e.source) || dotsIds.includes(e.target)
+
+      const dotsToRemove = state.dataset.dots.filter(
+        (e) => !remainingDotsIds.includes(e.id)
+      );
+      dotsToRemove.map((e) => state.svg.selectAll('#dot' + e.id).remove());
+
+      state.dataset.dots = remainingDotsIds;
+
+      const remainingDotsLinks = state.dataset.dotsLinks.filter(
+        (e) =>
+          remainingDotsIds.includes(e.source) ||
+          remainingDotsIds.includes(e.target)
+      );
+
+      const dotLinksToRemove = state.dataset.dotsLinks.filter(
+        (e) => !remainingDotsLinks.includes(e.id)
+      );
+      state.dataset.dotsLinks = remainingDotsLinks;
+      dotLinksToRemove.map((e) =>
+        state.svg.selectAll('#dot-link' + e.id).remove()
       );
     },
     REMOVE_LINK(state, payload) {
