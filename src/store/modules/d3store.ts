@@ -163,31 +163,37 @@ export const d3store = {
       state.selectedNode = payload;
     },
     CHANGE_ON_CLICK_TO_TARGET_NODES(state) {
-      state.node.on('click', function (this: any, e: PointerEvent, d: Node) {
-        if (state.selectedTargetNodes.includes(d.id)) {
-          d3.select(this).style('fill', 'lightblue');
-          state.selectedTargetNodes = state.selectedTargetNodes.filter(
-            (element) => element !== d.id
-          );
-        } else {
-          d3.select(this).style('fill', 'green');
-          state.selectedTargetNodes.push(d.id);
-        }
-      });
+      state.svg
+        .select('g.nodes')
+        .selectAll('rect')
+        .on('click', function (this: any, e: PointerEvent, d: Node) {
+          if (state.selectedTargetNodes.includes(d.id)) {
+            d3.select(this).style('fill', 'lightblue');
+            state.selectedTargetNodes = state.selectedTargetNodes.filter(
+              (element) => element !== d.id
+            );
+          } else {
+            d3.select(this).style('fill', 'green');
+            state.selectedTargetNodes.push(d.id);
+          }
+        });
     },
     CHANGE_ON_CLICK_TO_DEFAULT(state) {
-      state.node.on('click', function (this: any, e: PointerEvent, d: Node) {
-        state.svg
-          .select('#node' + state.selectedNode)
-          .style('fill', 'lightblue');
-        if (state.selectedNode === d.id) {
-          d3.select(this).style('fill', 'lightblue');
-          state.selectedNode = null;
-        } else {
-          d3.select(this).style('fill', 'red');
-          state.selectedNode = d.id;
-        }
-      });
+      state.svg
+        .select('g.nodes')
+        .selectAll('rect')
+        .on('click', function (this: any, e: PointerEvent, d: Node) {
+          state.svg
+            .select('#node' + state.selectedNode)
+            .style('fill', 'lightblue');
+          if (state.selectedNode === d.id) {
+            d3.select(this).style('fill', 'lightblue');
+            state.selectedNode = null;
+          } else {
+            d3.select(this).style('fill', 'red');
+            state.selectedNode = d.id;
+          }
+        });
     },
     SET_SELECTED_TARGET_NODE(state, payload) {
       state.selectedTargetNodes = payload;
@@ -255,6 +261,13 @@ export const d3store = {
       );
       state.svg.select('link' + payload).remove();
     },
+    REFRESH_SELECTION(state) {
+      state.node = state.svg
+        .select('g.nodes')
+        .selectAll('rect')
+        .data(state.dataset.nodes)
+        .enter();
+    },
   },
   actions: {
     setSvg({ commit }, selector) {
@@ -305,6 +318,7 @@ export const d3store = {
       commit('ADD_NODE', payload);
       commit('SET_NODE');
       commit('SET_NODE_ID_TEXT');
+      commit('REFRESH_SELECTION');
     },
 
     insertLink({ commit }, payload) {
