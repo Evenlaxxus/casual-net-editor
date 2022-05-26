@@ -47,7 +47,7 @@ body {
     background-color: $light;
   }
   &:disabled {
-    background-color: #e1e2e1;
+    background-color: #b0b0b0;
     cursor: auto;
   }
 }

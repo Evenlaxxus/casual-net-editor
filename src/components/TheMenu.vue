@@ -10,12 +10,22 @@
       <button class="base-button" :disabled="!selectedNode" @click="addLink">
         Add link
       </button>
-      <button class="base-button" @click="addBinding">Add binding</button>
+      <button class="base-button" :disabled="!selectedNode" @click="addBinding">
+        Add binding
+      </button>
       <button class="base-button" :disabled="!selectedNode" @click="deleteNode">
         Delete node
       </button>
-      <button class="base-button" @click="deleteLink">Delete link</button>
-      <button class="base-button" @click="deleteBinding">Delete binding</button>
+      <button class="base-button" :disabled="!selectedLink" @click="deleteLink">
+        Delete link
+      </button>
+      <button
+        class="base-button"
+        :disabled="!selectedDot"
+        @click="deleteBinding"
+      >
+        Delete binding
+      </button>
     </div>
   </div>
 </template>
@@ -34,6 +44,8 @@ export default defineComponent({
       'svg',
       'dataset',
       'selectedNode',
+      'selectedLink',
+      'selectedDot',
       'selectedTargetNodes',
       'getNodeById',
     ]),
@@ -46,10 +58,12 @@ export default defineComponent({
     ...mapActions([
       'insertNode',
       'insertLink',
+      'insertBinding',
       'setSelectedNode',
       'setSelectedTargetNodes',
       'removeNode',
       'removeLink',
+      'removeBinding',
       'changeOnClickToTargetNodes',
       'changeOnClickToDefault',
     ]),
@@ -69,18 +83,19 @@ export default defineComponent({
       this.openToast('Select target node.', 'info', 5000, true);
     },
     addBinding() {
-      console.log('add binding');
+      this.isControlPanelVisible = true;
+      this.changeOnClickToTargetNodes();
+      this.applyType = 'add_binding';
+      this.openToast('Select target nodes.', 'info', 5000, true);
     },
     deleteNode() {
-      console.log('delete node');
       this.removeNode(this.selectedNode);
     },
     deleteLink() {
-      console.log('delete link');
-      this.removeLink(1);
+      this.removeLink(this.selectedLink);
     },
     deleteBinding() {
-      console.log('delete binding');
+      this.removeBinding(this.selectedDot);
     },
     clearAll() {
       this.getNodeById('#node' + this.selectedNode).style('fill', 'lightblue');
@@ -90,15 +105,18 @@ export default defineComponent({
       this.setSelectedNode(null);
       this.setSelectedTargetNodes([]);
       this.isControlPanelVisible = false;
+      this.changeOnClickToDefault();
     },
     apply() {
       if (this.applyType === 'add_link') {
         if (this.selectedTargetNodes.length === 1) {
+          const nextId = Math.max(...this.dataset.links.map((e) => e.id)) + 1;
+
           this.insertLink({
+            id: nextId,
             source: this.selectedNode,
             target: this.selectedTargetNodes[0],
           });
-          this.changeOnClickToDefault();
 
           this.openToast(
             'Link between nodes ' +
@@ -110,6 +128,16 @@ export default defineComponent({
             5000,
             true
           );
+        } else {
+          this.openToast('Selected too many nodes.', 'error', 5000, true);
+        }
+      }
+      if (this.applyType === 'add_binding') {
+        if (this.selectedTargetNodes.length > 0) {
+          this.insertBinding({
+            source: this.selectedNode,
+            target: this.selectedTargetNodes,
+          });
         }
       }
       this.clearAll();
