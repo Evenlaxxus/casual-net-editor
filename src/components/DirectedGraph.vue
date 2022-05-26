@@ -37,6 +37,7 @@ export default defineComponent({
       'initDots',
       'initDotLinks',
       'initNodeIdText',
+      'initNodeDescriptionText',
     ]),
     generateGraph() {
       this.initLink();
@@ -44,6 +45,8 @@ export default defineComponent({
       this.initNode();
 
       this.initNodeIdText();
+
+      this.initNodeDescriptionText();
 
       this.initDots();
 

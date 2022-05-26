@@ -21,12 +21,24 @@ export default {
     commit('SET_NODE_ID_TEXT');
   },
 
+  initNodeDescriptionText({ commit }) {
+    commit('SET_NODE_DESCRIPTION_TEXT');
+  },
+
   initDotLinks({ commit }) {
     commit('SET_DOT_LINKS');
   },
 
   setSelectedNode({ commit }, payload) {
     commit('SET_SELECTED_NODE', payload);
+  },
+
+  setSelectedLink({ commit }, payload) {
+    commit('SET_SELECTED_LINK', payload);
+  },
+
+  setSelectedDot({ commit }, payload) {
+    commit('SET_SELECTED_DOT', payload);
   },
 
   setSelectedTargetNodes({ commit }, payload) {
@@ -49,6 +61,7 @@ export default {
     commit('ADD_NODE', payload);
     commit('SET_NODE');
     commit('SET_NODE_ID_TEXT');
+    commit('SET_NODE_DESCRIPTION_TEXT');
     commit('REFRESH_SELECTION');
   },
 
@@ -63,11 +76,17 @@ export default {
     commit('SET_DOT_LINKS');
   },
 
+  editNodeDescription({ commit }, payload) {
+    commit('EDIT_NODE_TEXT', payload);
+    commit('SET_NODE_DESCRIPTION_TEXT');
+  },
+
   removeNode({ commit }, payload) {
     commit('REMOVE_NODE', payload);
     commit('SET_SELECTED_NODE', null);
     commit('SET_NODE');
     commit('SET_NODE_ID_TEXT');
+    commit('SET_NODE_DESCRIPTION_TEXT');
     commit('SET_LINK');
     commit('SET_DOT');
     commit('SET_DOT_LINKS');

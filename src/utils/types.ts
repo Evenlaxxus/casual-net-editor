@@ -2,6 +2,7 @@ export type Node = {
   id: number;
   x: number;
   y: number;
+  text: string;
 };
 
 export type Link = {

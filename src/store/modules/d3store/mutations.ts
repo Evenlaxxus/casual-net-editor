@@ -24,8 +24,9 @@ export default {
     state.svg.append('g').attr('class', 'links');
     state.svg.append('g').attr('class', 'nodes');
     state.svg.append('g').attr('class', 'dots');
-    state.svg.append('g').attr('class', 'text');
+    state.svg.append('g').attr('class', 'node-id');
     state.svg.append('g').attr('class', 'dot-links');
+    state.svg.append('g').attr('class', 'text');
   },
   SET_LINK(state) {
     state.link = state.svg
@@ -92,15 +93,28 @@ export default {
   },
   SET_NODE_ID_TEXT(state) {
     state.nodeIdText = state.svg
-      .select('g.text')
+      .select('g.node-id')
       .selectAll('text')
       .data(state.dataset.nodes)
       .enter()
       .append('text')
       .text((d: Node) => d.id)
-      .attr('id', (d: Node) => 'text' + d.id)
+      .attr('id', (d: Node) => 'node-id' + d.id)
       .attr('x', (d: Node) => (d.x as number) - 5)
       .attr('y', (d: Node) => (d.y as number) + 5);
+  },
+  SET_NODE_DESCRIPTION_TEXT(state) {
+    state.nodeIdText = state.svg
+      .select('g.text')
+      .selectAll('text')
+      .data(state.dataset.nodes)
+      .enter()
+      .append('text')
+      .text((d: Node) => d.text)
+      .style('font-size', '.875rem')
+      .attr('id', (d: Node) => 'text' + d.id)
+      .attr('x', (d: Node) => (d.x as number) - NODE_WIDTH / 2)
+      .attr('y', (d: Node) => (d.y as number) + NODE_HEIGHT);
   },
   SET_DOT_LINKS(state) {
     state.dotLinks = state.svg
@@ -119,6 +133,12 @@ export default {
   },
   SET_SELECTED_NODE(state, payload) {
     state.selectedNode = payload;
+  },
+  SET_SELECTED_LINK(state, payload) {
+    state.selectedLink = payload;
+  },
+  SET_SELECTED_DOT(state, payload) {
+    state.selectedDot = payload;
   },
   CHANGE_ON_CLICK_TO_TARGET_NODES(state) {
     state.svg
@@ -141,6 +161,18 @@ export default {
   ADD_NODE(state, payload) {
     state.dataset.nodes.push(payload);
   },
+  EDIT_NODE_TEXT(state, payload) {
+    state.dataset.nodes = state.dataset.nodes.map((e) =>
+      e.id === payload.id
+        ? {
+            ...e,
+            text: payload.text,
+          }
+        : e
+    );
+    // state.svg.selectAll('#text' + payload.id).remove();
+    state.svg.selectAll('g.text text').remove();
+  },
   ADD_LINK(state, payload) {
     state.dataset.links.push(payload);
   },
@@ -162,16 +194,11 @@ export default {
         row: row,
       });
     });
-
-    if (payload.target.length > 1) {
-      for (let i = 0; i < payload.target.length; i++) {
-        console.log(i);
-      }
-    }
   },
   REMOVE_NODE(state, payload) {
     state.dataset.nodes = state.dataset.nodes.filter((e) => e.id !== payload);
     state.svg.selectAll('#node' + payload).remove();
+    state.svg.selectAll('#node-id' + payload).remove();
     state.svg.selectAll('#text' + payload).remove();
 
     const remainingLinks = state.dataset.links.filter(
