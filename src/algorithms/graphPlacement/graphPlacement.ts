@@ -12,8 +12,6 @@ export function graphPlacement(
 ) {
   const adjacencyList = createAdjacencyList(graph);
 
-  console.log(adjacencyList);
-
   const layers = coffmanGraham(adjacencyList, W);
 
   sortLayers(layers, adjacencyList);

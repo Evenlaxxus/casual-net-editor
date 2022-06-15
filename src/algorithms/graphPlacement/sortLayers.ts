@@ -1,5 +1,5 @@
 export function sortLayers(
-  layers: Array<Array<string>>,
+  layers: Array<Array<number>>,
   graph: Record<number, Array<number>>
 ) {
   const sortedLayers = layers;
@@ -20,21 +20,44 @@ export function sortLayers(
 }
 
 function layersQuicksort(
-  layer1: Array<string>,
-  layer2: Array<string>,
+  layer1: Array<number>,
+  layer2: Array<number>,
   graph: Record<number, Array<number>>
-): Array<string> {
-  const output = layer2;
-  const p = output[0];
-  const q = output[1];
+): Array<number> {
+  const a = [...layer2];
+  if (a.length < 2) return a;
+  const pivotIndex = Math.floor(layer2.length / 2);
+  const pivot = a[pivotIndex];
+  const [left, right] = a.reduce(
+    (acc, val, i) => {
+      if (
+        numberOfCrossings(layer1, layer2, graph, val, pivot) <
+          numberOfCrossings(layer1, layer2, graph, pivot, val) ||
+        (numberOfCrossings(layer1, layer2, graph, val, pivot) ===
+          numberOfCrossings(layer1, layer2, graph, pivot, val) &&
+          i != pivotIndex)
+      ) {
+        acc[0].push(val);
+      } else if (val > pivot) {
+        acc[1].push(val);
+      }
+      return acc;
+    },
+    [[], []] as [number[], number[]]
+  );
+  return [
+    ...layersQuicksort(layer1, left, graph),
+    pivot,
+    ...layersQuicksort(layer1, right, graph),
+  ];
 }
 
 function numberOfCrossings(
-  layer1: Array<string>,
-  layer2: Array<string>,
+  layer1: Array<number>,
+  layer2: Array<number>,
   graph: Record<number, Array<number>>,
-  v1: string,
-  v2: string
+  v1: number,
+  v2: number
 ): number {
   let sum = 0;
   for (const k of graph[v1]) {
@@ -47,6 +70,6 @@ function numberOfCrossings(
   return sum;
 }
 
-function onYourLeft(v1: string, v2: string, layer: Array<string>): number {
+function onYourLeft(v1: number, v2: number, layer: Array<number>): number {
   return layer.indexOf(v1) < layer.indexOf(v2) ? 1 : 0;
 }
