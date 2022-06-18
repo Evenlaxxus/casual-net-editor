@@ -1,7 +1,6 @@
 import { Dot, Link, Node, State } from '@/utils/types';
 import { DOT_SIZE, STROKE_WIDTH } from '@/utils/consts';
 import * as d3 from 'd3';
-import { D3DragEvent, SubjectPosition } from 'd3';
 
 export function onClickLink(state: State) {
   return function (this: any, e: PointerEvent, d: Link) {
@@ -25,9 +24,9 @@ export function onClickLink(state: State) {
 
 export function onClickNode(state: State) {
   return function (this: any, e: PointerEvent, d: Node) {
-    state.svg.select('#node' + state.selectedNode).style('fill', 'lightblue');
+    state.svg.select('#node' + state.selectedNode).style('fill', 'transparent');
     if (state.selectedNode === d.id) {
-      d3.select(this).style('fill', 'lightblue');
+      d3.select(this).style('fill', 'transparent');
       state.selectedNode = null;
     } else {
       d3.select(this).style('fill', 'red');
@@ -66,28 +65,4 @@ export function onClickNodeAlternative(state: State) {
       state.selectedTargetNodes.push(d.id);
     }
   };
-}
-
-export function dragStart(
-  event: D3DragEvent<SVGRectElement, any, SubjectPosition>,
-  d: any
-) {
-  d.fy = d.y;
-  d.fx = d.x;
-}
-
-export function dragged(
-  event: D3DragEvent<SVGRectElement, any, SubjectPosition>,
-  d: any
-) {
-  d.fx = event.x;
-  d.fy = event.y;
-}
-
-export function dragEnd(
-  event: D3DragEvent<SVGRectElement, any, SubjectPosition>,
-  d: any
-) {
-  d.fx = null;
-  d.fy = null;
 }

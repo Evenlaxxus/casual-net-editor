@@ -26,10 +26,8 @@ export default defineComponent({
       'nodeIdText',
     ]),
   },
-  mounted() {
-    this.setSvg('svg');
-    this.generateGraph();
-    console.log(
+  created() {
+    this.setDataset(
       graphPlacement(
         [
           {
@@ -67,6 +65,12 @@ export default defineComponent({
       )
     );
   },
+  mounted() {
+    this.setSvg('svg');
+    this.generateGraph();
+
+    console.log(this.dataset);
+  },
   methods: {
     ...mapActions([
       'setSvg',
@@ -76,13 +80,12 @@ export default defineComponent({
       'initDotLinks',
       'initNodeIdText',
       'initNodeDescriptionText',
+      'setDataset',
     ]),
     generateGraph() {
       this.initLink();
 
       this.initNode();
-
-      this.initNodeIdText();
 
       this.initNodeDescriptionText();
 

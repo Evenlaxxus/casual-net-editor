@@ -1,7 +1,7 @@
 export function sortLayers(
   layers: Array<Array<number>>,
   graph: Record<number, Array<number>>
-) {
+): Array<Array<number>> {
   const sortedLayers = layers;
   for (let i = 0; i < layers.length - 1; i++) {
     sortedLayers[i + 1] = layersQuicksort(
@@ -17,6 +17,7 @@ export function sortLayers(
       graph
     );
   }
+  return sortedLayers;
 }
 
 function layersQuicksort(
