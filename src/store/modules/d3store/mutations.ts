@@ -25,6 +25,19 @@ export default {
     state.svg.append('g').attr('class', 'node-id');
     state.svg.append('g').attr('class', 'dot-links');
     state.svg.append('g').attr('class', 'text');
+
+    state.svg
+      .append('defs')
+      .append('marker')
+      .attr('id', 'arrow')
+      .attr('refX', 5)
+      .attr('refY', 2)
+      .attr('markerWidth', 6)
+      .attr('markerHeight', 4)
+      .attr('orient', 'auto-start-reverse')
+      .append('path')
+      .attr('d', 'M 0,0 V 4 L6,2 Z')
+      .attr('stroke', 'black');
   },
   SET_LINK(state) {
     state.link = state.svg
@@ -37,6 +50,7 @@ export default {
       .attr('id', (d: Link) => 'link' + d.id)
       .attr('stroke', 'black')
       .attr('stroke-width', STROKE_WIDTH)
+      .attr('marker-end', 'url(#arrow)')
       .attr(
         'x1',
         (d: Link) =>
