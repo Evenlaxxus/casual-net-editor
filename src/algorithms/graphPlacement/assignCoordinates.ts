@@ -3,17 +3,48 @@ export function assignCoordinates(
   layers: Array<Array<number>>,
   adjacencyList: Record<number, Array<number>>
 ): Record<number, { x: number; y: number }> {
-  const coordinates = getInitialCoordinates(layers);
-  Object.keys(coordinates).map((vertex) => {
-    console.log(
-      vertex,
+  let bestCoordinates = getInitialCoordinates(layers);
+  let minimalIntersections = Object.keys(bestCoordinates).reduce(
+    (acc, vertex) =>
+      acc +
       numberOfEdgesIntersectedWithNodes(
         parseInt(vertex),
         adjacencyList,
-        coordinates
-      )
+        bestCoordinates
+      ),
+    0
+  );
+  let intersections: number = minimalIntersections + 1;
+  let coordinates: Record<number, { x: number; y: number }> = {};
+  let iterationCounter = layers.length * 6;
+
+  while (minimalIntersections < intersections || iterationCounter !== 0) {
+    coordinates = getNextCoordinates(bestCoordinates);
+
+    intersections = Object.keys(coordinates).reduce(
+      (acc, vertex) =>
+        acc +
+        numberOfEdgesIntersectedWithNodes(
+          parseInt(vertex),
+          adjacencyList,
+          bestCoordinates
+        ),
+      0
     );
-  });
+    iterationCounter -= 1;
+
+    if (minimalIntersections > intersections) {
+      bestCoordinates = coordinates;
+      minimalIntersections = intersections;
+    }
+  }
+
+  return bestCoordinates;
+}
+
+function getNextCoordinates(
+  coordinates: Record<number, { x: number; y: number }>
+): Record<number, { x: number; y: number }> {
   return coordinates;
 }
 

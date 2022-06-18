@@ -129,7 +129,7 @@ export default {
       .attr('cy', (d: Dot) => setDotPosition(d, 'Y', RADIUS_CONST, state.node))
       .on('click', onClickDot(state));
   },
-  SET_NODE_DESCRIPTION_TEXT(state) {
+  SET_NODE_TEXT(state) {
     state.nodeIdText = state.svg
       .select('g.text')
       .selectAll('text')
