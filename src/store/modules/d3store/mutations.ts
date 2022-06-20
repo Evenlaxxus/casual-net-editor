@@ -1,3 +1,4 @@
+import * as d3 from 'd3';
 import { Dot, Link, Node } from '@/utils/types';
 import {
   DOT_SIZE,
@@ -40,60 +41,35 @@ export default {
       .attr('stroke', 'black');
   },
   SET_LINK(state) {
+    const curve = d3.line().curve(d3.curveNatural);
     state.link = state.svg
       .select('g.links')
-      .selectAll('line')
+      .selectAll('path')
       .data(state.dataset.links)
       .enter()
-      .append('line')
+      .append('path')
       .style('cursor', 'pointer')
       .attr('id', (d: Link) => 'link' + d.id)
       .attr('stroke', 'black')
       .attr('stroke-width', STROKE_WIDTH)
       .attr('marker-end', 'url(#arrow)')
-      .attr(
-        'x1',
-        (d: Link) =>
+      .attr('d', (d: Link) =>
+        curve([
           calculateOffsetPosition(
             state.dataset.nodes.find((e) => e.id === d.target).x,
             state.dataset.nodes.find((e) => e.id === d.target).y,
             state.dataset.nodes.find((e) => e.id === d.source).x,
             state.dataset.nodes.find((e) => e.id === d.source).y,
             NODE_SIZE
-          )[0]
-      )
-      .attr(
-        'y1',
-        (d: Link) =>
-          calculateOffsetPosition(
-            state.dataset.nodes.find((e) => e.id === d.target).x,
-            state.dataset.nodes.find((e) => e.id === d.target).y,
-            state.dataset.nodes.find((e) => e.id === d.source).x,
-            state.dataset.nodes.find((e) => e.id === d.source).y,
-            NODE_SIZE
-          )[1]
-      )
-      .attr(
-        'x2',
-        (d: Link) =>
+          ),
           calculateOffsetPosition(
             state.dataset.nodes.find((e) => e.id === d.source).x,
             state.dataset.nodes.find((e) => e.id === d.source).y,
             state.dataset.nodes.find((e) => e.id === d.target).x,
             state.dataset.nodes.find((e) => e.id === d.target).y,
             NODE_SIZE
-          )[0]
-      )
-      .attr(
-        'y2',
-        (d: Link) =>
-          calculateOffsetPosition(
-            state.dataset.nodes.find((e) => e.id === d.source).x,
-            state.dataset.nodes.find((e) => e.id === d.source).y,
-            state.dataset.nodes.find((e) => e.id === d.target).x,
-            state.dataset.nodes.find((e) => e.id === d.target).y,
-            NODE_SIZE
-          )[1]
+          ),
+        ])
       )
       .on('click', onClickLink(state));
   },

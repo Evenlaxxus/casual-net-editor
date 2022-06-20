@@ -45,6 +45,7 @@ export function assignCoordinates(
 function getNextCoordinates(
   coordinates: Record<number, { x: number; y: number }>
 ): Record<number, { x: number; y: number }> {
+  //TODO calculate coordinates
   return coordinates;
 }
 
