@@ -2,6 +2,7 @@ import { coffmanGraham } from '@/algorithms/graphPlacement/assignLayers';
 import { sortLayers } from '@/algorithms/graphPlacement/sortLayers';
 import { assignCoordinates } from '@/algorithms/graphPlacement/assignCoordinates';
 import { Dot, Link, Node } from '@/utils/types';
+import { addDummyVertices } from '@/algorithms/graphPlacement/dummyVertices';
 
 export function graphPlacement(
   graph: Array<{
@@ -17,11 +18,23 @@ export function graphPlacement(
 
   const layers = coffmanGraham(adjacencyList, W);
 
-  const sortedLayers = sortLayers(layers, adjacencyList);
+  const {
+    layersWithDummyVertices,
+    dummyVertices,
+    adjacencyListWithDummyVertices,
+  } = addDummyVertices(layers, adjacencyList);
 
-  const coordinates = assignCoordinates(sortedLayers, adjacencyList);
+  const sortedLayers = sortLayers(
+    layersWithDummyVertices,
+    adjacencyListWithDummyVertices
+  );
 
-  return mapToDataset(coordinates, graph, adjacencyList);
+  const coordinates = assignCoordinates(
+    sortedLayers,
+    adjacencyListWithDummyVertices
+  );
+
+  return mapToDataset(coordinates, graph, adjacencyList, dummyVertices);
 }
 
 function createAdjacencyList(
@@ -47,7 +60,8 @@ function mapToDataset(
     incoming: Array<Array<number>>;
     outgoing: Array<Array<number>>;
   }>,
-  adjacencyList: Record<number, Array<number>>
+  adjacencyList: Record<number, Array<number>>,
+  dummyVertices: Record<number, Record<number, Array<number>>>
 ): {
   nodes: Array<Node>;
   links: Array<Link>;
@@ -79,6 +93,13 @@ function mapToDataset(
         id: linkId,
         source: vertex.id,
         target: item,
+        bendPoints:
+          dummyVertices[vertex.id] && dummyVertices[vertex.id][item]
+            ? dummyVertices[vertex.id][item].map((e) => [
+                coordinates[e].x,
+                coordinates[e].y,
+              ])
+            : [],
       });
       linkId += 1;
     });

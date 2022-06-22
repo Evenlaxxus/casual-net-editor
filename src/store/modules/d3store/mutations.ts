@@ -51,6 +51,7 @@ export default {
       .style('cursor', 'pointer')
       .attr('id', (d: Link) => 'link' + d.id)
       .attr('stroke', 'black')
+      .attr('fill', 'none')
       .attr('stroke-width', STROKE_WIDTH)
       .attr('marker-end', 'url(#arrow)')
       .attr('d', (d: Link) =>
@@ -62,6 +63,7 @@ export default {
             state.dataset.nodes.find((e) => e.id === d.source).y,
             NODE_SIZE
           ),
+          ...d.bendPoints,
           calculateOffsetPosition(
             state.dataset.nodes.find((e) => e.id === d.source).x,
             state.dataset.nodes.find((e) => e.id === d.source).y,

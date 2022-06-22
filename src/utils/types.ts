@@ -9,6 +9,7 @@ export type Link = {
   id: number;
   source: number;
   target: number;
+  bendPoints: Array<[number, number]>;
 };
 
 export type Dot = {
@@ -30,11 +31,10 @@ export interface State {
     dots: Array<Dot>;
     dotsLinks: Array<Link>;
   };
-  link: any;
-  node: any;
-  dot: any;
-  nodeIdText: any;
-  dotLinks: any;
+  link: Link;
+  node: Node;
+  dot: Dot;
+  dotLinks: Link;
   selectedNode: number | null;
   selectedTargetNodes: Array<number>;
   selectedLink: number | null;

@@ -2,8 +2,6 @@ export function coffmanGraham(
   adjacencyList: Record<number, Array<number>>,
   W: number
 ): Array<Array<number>> {
-  console.log('adjacencyList', adjacencyList);
-
   const adjMatrix = adjacencyMatrix(adjacencyList);
 
   const closureMatrix = pathMatrix(adjMatrix);
@@ -11,7 +9,6 @@ export function coffmanGraham(
   const reducedMatrix = transitiveReduction(closureMatrix);
 
   const reducedAdjacencyList = adjacencyListFromMatrix(reducedMatrix);
-  console.log('reducedAdjacencyList', reducedAdjacencyList);
 
   const sortedGraph = topologicalSort(reducedAdjacencyList);
 
