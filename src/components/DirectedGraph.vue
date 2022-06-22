@@ -33,31 +33,31 @@ export default defineComponent({
           {
             id: 0,
             name: 'start',
-            incoming: [],
-            outgoing: [[1, 2], [3], [4]],
+            incoming: [[3]],
+            outgoing: [[1, 2], [4]],
           },
           {
             id: 1,
             name: 'start',
-            incoming: [],
+            incoming: [[0]],
             outgoing: [[3]],
           },
           {
             id: 2,
             name: 'start',
-            incoming: [],
+            incoming: [[0]],
             outgoing: [[3]],
           },
           {
             id: 3,
             name: 'start',
-            incoming: [],
-            outgoing: [[4]],
+            incoming: [[1], [2]],
+            outgoing: [[0], [4]],
           },
           {
             id: 4,
             name: 'start',
-            incoming: [],
+            incoming: [[0], [3]],
             outgoing: [],
           },
         ],
@@ -68,8 +68,6 @@ export default defineComponent({
   mounted() {
     this.setSvg('svg');
     this.generateGraph();
-
-    console.log(this.dataset);
   },
   methods: {
     ...mapActions([

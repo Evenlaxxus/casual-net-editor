@@ -3,6 +3,7 @@ import { sortLayers } from '@/algorithms/graphPlacement/sortLayers';
 import { assignCoordinates } from '@/algorithms/graphPlacement/assignCoordinates';
 import { Dot, Link, Node } from '@/utils/types';
 import { addDummyVertices } from '@/algorithms/graphPlacement/dummyVertices';
+import { removeCycles } from '@/algorithms/graphPlacement/removeCycles';
 
 export function graphPlacement(
   graph: Array<{
@@ -13,16 +14,23 @@ export function graphPlacement(
   }>,
   W: number
 ) {
-  //TODO remove cycles
-  const adjacencyList = createAdjacencyList(graph);
+  const { adjacencyList, incomingAdjacencyList } = createAdjacencyList(graph);
 
-  const layers = coffmanGraham(adjacencyList, W);
+  const acyclicAdjacencyList = removeCycles(
+    adjacencyList,
+    incomingAdjacencyList
+  );
+
+  console.log('removeCycles', acyclicAdjacencyList);
+  // console.log(adjacencyList);
+
+  const layers = coffmanGraham(acyclicAdjacencyList, W);
 
   const {
     layersWithDummyVertices,
     dummyVertices,
     adjacencyListWithDummyVertices,
-  } = addDummyVertices(layers, adjacencyList);
+  } = addDummyVertices(layers, acyclicAdjacencyList);
 
   const sortedLayers = sortLayers(
     layersWithDummyVertices,
@@ -34,7 +42,7 @@ export function graphPlacement(
     adjacencyListWithDummyVertices
   );
 
-  return mapToDataset(coordinates, graph, adjacencyList, dummyVertices);
+  return mapToDataset(coordinates, graph, acyclicAdjacencyList, dummyVertices);
 }
 
 function createAdjacencyList(
@@ -44,12 +52,19 @@ function createAdjacencyList(
     incoming: Array<Array<number>>;
     outgoing: Array<Array<number>>;
   }>
-): Record<number, Array<number>> {
+): {
+  adjacencyList: Record<number, Array<number>>;
+  incomingAdjacencyList: Record<number, Array<number>>;
+} {
   const adjacencyList = {};
+  const incomingAdjacencyList = {};
   graph.map((node) => {
     adjacencyList[node.id] = [...new Set(node.outgoing.flat())];
   });
-  return adjacencyList;
+  graph.map((node) => {
+    incomingAdjacencyList[node.id] = [...new Set(node.incoming.flat())];
+  });
+  return { adjacencyList, incomingAdjacencyList };
 }
 
 function mapToDataset(
@@ -66,18 +81,18 @@ function mapToDataset(
   nodes: Array<Node>;
   links: Array<Link>;
   dots: Array<Dot>;
-  dotLinks: Array<Link>;
+  dotsLinks: Array<Link>;
 } {
   const dataset: {
     nodes: Array<Node>;
     links: Array<Link>;
     dots: Array<Dot>;
-    dotLinks: Array<Link>;
+    dotsLinks: Array<Link>;
   } = {
     nodes: [],
     links: [],
     dots: [],
-    dotLinks: [],
+    dotsLinks: [],
   };
   let linkId = 1;
 
