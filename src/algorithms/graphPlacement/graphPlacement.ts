@@ -3,7 +3,10 @@ import { sortLayers } from '@/algorithms/graphPlacement/sortLayers';
 import { assignCoordinates } from '@/algorithms/graphPlacement/assignCoordinates';
 import { Dot, Link, Node } from '@/utils/types';
 import { addDummyVertices } from '@/algorithms/graphPlacement/dummyVertices';
-import { removeCycles } from '@/algorithms/graphPlacement/removeCycles';
+import {
+  removeCycles,
+  restoreCycles,
+} from '@/algorithms/graphPlacement/removeCycles';
 
 export function graphPlacement(
   graph: Array<{
@@ -42,7 +45,14 @@ export function graphPlacement(
     adjacencyListWithDummyVertices
   );
 
-  return mapToDataset(coordinates, graph, acyclicAdjacencyList, dummyVertices);
+  const dataset = mapToDataset(
+    coordinates,
+    graph,
+    acyclicAdjacencyList,
+    dummyVertices
+  );
+
+  return restoreCycles(dataset, adjacencyList);
 }
 
 function createAdjacencyList(

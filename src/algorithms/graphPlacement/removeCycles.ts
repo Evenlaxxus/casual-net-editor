@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import { Dot, Link, Node } from '@/utils/types';
 
 export function removeCycles(
   adjacencyList: Record<number, Array<number>>,
@@ -33,4 +34,33 @@ export function removeCycles(
     });
   });
   return acyclic;
+}
+
+export function restoreCycles(
+  dataset: {
+    nodes: Array<Node>;
+    links: Array<Link>;
+    dots: Array<Dot>;
+    dotsLinks: Array<Link>;
+  },
+  adjacencyList: Record<number, Array<number>>
+): {
+  nodes: Array<Node>;
+  links: Array<Link>;
+  dots: Array<Dot>;
+  dotsLinks: Array<Link>;
+} {
+  const datasetClone = _.cloneDeep(dataset);
+
+  dataset.links = datasetClone.links.map((link) =>
+    adjacencyList[link.source].includes(link.target)
+      ? link
+      : {
+          ...link,
+          source: link.target,
+          target: link.source,
+          bendPoints: _.reverse(link.bendPoints),
+        }
+  );
+  return dataset;
 }
