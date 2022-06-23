@@ -24,9 +24,6 @@ export function graphPlacement(
     incomingAdjacencyList
   );
 
-  console.log('removeCycles', acyclicAdjacencyList);
-  // console.log(adjacencyList);
-
   const layers = coffmanGraham(acyclicAdjacencyList, W);
 
   const {
@@ -105,6 +102,7 @@ function mapToDataset(
     dotsLinks: [],
   };
   let linkId = 1;
+  let dotId = 1;
 
   graph.map((vertex) => {
     dataset.nodes.push({
@@ -127,6 +125,34 @@ function mapToDataset(
             : [],
       });
       linkId += 1;
+    });
+
+    let row = 1;
+    vertex.outgoing.map((target) => {
+      target.map((targetVertex) => {
+        dataset.dots.push({
+          id: dotId,
+          source: vertex.id,
+          target: targetVertex,
+          row: row,
+        });
+        dotId += 1;
+      });
+      row += 1;
+    });
+
+    row = 1;
+    vertex.incoming.map((target) => {
+      target.map((targetVertex) => {
+        dataset.dots.push({
+          id: dotId,
+          source: vertex.id,
+          target: targetVertex,
+          row: row,
+        });
+        dotId += 1;
+      });
+      row += 1;
     });
   });
   return dataset;
