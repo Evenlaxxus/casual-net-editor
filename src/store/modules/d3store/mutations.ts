@@ -103,8 +103,12 @@ export default {
       .attr('r', DOT_SIZE)
       .style('fill', 'black')
       .style('cursor', 'pointer')
-      .attr('cx', (d: Dot) => setDotPosition(d, 'X', RADIUS_CONST, state.node))
-      .attr('cy', (d: Dot) => setDotPosition(d, 'Y', RADIUS_CONST, state.node))
+      .attr('cx', (d: Dot) =>
+        setDotPosition(d, 'X', RADIUS_CONST, state.dataset.links, state.svg)
+      )
+      .attr('cy', (d: Dot) =>
+        setDotPosition(d, 'Y', RADIUS_CONST, state.dataset.links, state.svg)
+      )
       .on('click', onClickDot(state));
   },
   SET_NODE_TEXT(state) {

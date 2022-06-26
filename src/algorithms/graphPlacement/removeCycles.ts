@@ -50,17 +50,17 @@ export function restoreCycles(
   dots: Array<Dot>;
   dotsLinks: Array<Link>;
 } {
-  const datasetClone = _.cloneDeep(dataset);
-
-  dataset.links = datasetClone.links.map((link) =>
-    adjacencyList[link.source].includes(link.target)
-      ? link
-      : {
-          ...link,
-          source: link.target,
-          target: link.source,
-          bendPoints: _.reverse(link.bendPoints),
-        }
-  );
-  return dataset;
+  return {
+    ...dataset,
+    links: dataset.links.map((link) =>
+      adjacencyList[link.source].includes(link.target)
+        ? link
+        : {
+            ...link,
+            source: link.target,
+            target: link.source,
+            bendPoints: _.reverse(link.bendPoints),
+          }
+    ),
+  };
 }

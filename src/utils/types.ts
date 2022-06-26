@@ -23,14 +23,16 @@ export interface HTMLInputEvent extends InputEvent {
   target: HTMLInputElement & EventTarget;
 }
 
+export interface Dataset {
+  nodes: Array<Node>;
+  links: Array<Link>;
+  dots: Array<Dot>;
+  dotsLinks: Array<Link>;
+}
+
 export interface State {
   svg: any;
-  dataset: {
-    nodes: Array<Node>;
-    links: Array<Link>;
-    dots: Array<Dot>;
-    dotsLinks: Array<Link>;
-  };
+  dataset: Dataset;
   link: Link;
   node: Node;
   dot: Dot;

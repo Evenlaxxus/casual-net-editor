@@ -14,7 +14,6 @@ export default defineComponent({
   data: () => ({
     windowWidth: WIDTH,
     windowHeight: HEIGHT,
-    RADIUS_CONST: 30,
   }),
   computed: {
     ...mapGetters([
@@ -27,8 +26,8 @@ export default defineComponent({
       'nodeIdText',
     ]),
   },
-  created() {
-    this.setDataset(graphPlacement(graph1, 5));
+  async created() {
+    await this.setDataset(graphPlacement(graph1, 5));
   },
   mounted() {
     this.setSvg('svg');

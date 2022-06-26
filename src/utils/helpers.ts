@@ -27,17 +27,38 @@ export function setDotsArc(d: Link, dot: any, node: any, baseRadius: number) {
   return curve([[sourceX, sourceY], middlePoint, [targetX, targetY]]);
 }
 
-export function setDotPosition(d: Dot, axis: string, baseRadius: number, node) {
-  const sourceNode = node.data().find((e: Node) => e.id === d.source);
-  const targetNode = node.data().find((e: Node) => e.id === d.target);
-  const center = [sourceNode.x, sourceNode.y];
-  const radius = baseRadius + d.row * 10;
-  const target = [targetNode.x, targetNode.y];
+export function setDotPosition(
+  d: Dot,
+  axis: string,
+  baseRadius: number,
+  links: Array<Link>,
+  svg: any
+) {
+  let isIncoming = false;
+  let linkData = links.find(
+    (e: Link) => e.source === d.source && e.target === d.target
+  );
+  if (!linkData) {
+    linkData = links.find(
+      (e: Link) => e.source === d.target && e.target === d.source
+    );
+    isIncoming = true;
+  }
 
-  let v = [target[0] - center[0], target[1] - center[1]];
-  const vLen = Math.hypot(v[0], v[1]);
-  v = [v[0] / vLen, v[1] / vLen];
-  const point = [center[0] + v[0] * radius, center[1] + v[1] * radius];
-  if (axis === 'X') return point[0];
-  return point[1];
+  const link = svg.select('path#link' + linkData?.id || '').node();
+
+  if (isIncoming) {
+    if (axis === 'X')
+      return (link as SVGGeometryElement).getPointAtLength(
+        (link as SVGGeometryElement).getTotalLength() - baseRadius * d.row
+      ).x;
+    return (link as SVGGeometryElement).getPointAtLength(
+      (link as SVGGeometryElement).getTotalLength() - baseRadius * d.row
+    ).y;
+  } else {
+    if (axis === 'X')
+      return (link as SVGGeometryElement).getPointAtLength(baseRadius * d.row)
+        .x;
+    return (link as SVGGeometryElement).getPointAtLength(baseRadius * d.row).y;
+  }
 }
