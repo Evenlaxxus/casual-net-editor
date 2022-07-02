@@ -62,3 +62,17 @@ export function setDotPosition(
     return (link as SVGGeometryElement).getPointAtLength(baseRadius * d.row).y;
   }
 }
+
+export const permutations = (arr: Array<any>): Array<any> => {
+  if (arr.length <= 2) return arr.length === 2 ? [arr, [arr[1], arr[0]]] : arr;
+  return arr.reduce(
+    (acc, item, i) =>
+      acc.concat(
+        permutations([...arr.slice(0, i), ...arr.slice(i + 1)]).map((val) => [
+          item,
+          ...val,
+        ])
+      ),
+    []
+  );
+};

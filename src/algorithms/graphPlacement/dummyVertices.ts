@@ -7,10 +7,12 @@ export function addDummyVertices(
   layersWithDummyVertices: Array<Array<number>>;
   dummyVertices: Record<number, Record<number, Array<number>>>;
   adjacencyListWithDummyVertices: Record<number, Array<number>>;
+  dummyVerticesArray: Array<number>;
 } {
   const dummyVertices: Record<number, Record<number, Array<number>>> = {
     ...Object.keys(adjacencyList).map(() => ({})),
   };
+  const dummyVerticesArray: Array<number> = [];
   const layersWithDummyVertices: Array<Array<number>> = _.cloneDeep(layers);
   const adjacencyListWithDummyVertices: Record<
     number,
@@ -49,6 +51,7 @@ export function addDummyVertices(
               newVertexId,
             ];
           }
+          dummyVerticesArray.push(newVertexId);
           newVertexId += 1;
         }
         adjacencyListWithDummyVertices[parseInt(vertex)].splice(
@@ -63,5 +66,6 @@ export function addDummyVertices(
     layersWithDummyVertices,
     dummyVertices,
     adjacencyListWithDummyVertices,
+    dummyVerticesArray,
   };
 }

@@ -1,43 +1,44 @@
-import { MARGIN, NODE_SIZE } from '@/utils/consts';
+import { MARGIN_HORIZONTAL, MARGIN_VERTICAL, NODE_SIZE } from '@/utils/consts';
 export function assignCoordinates(
   layers: Array<Array<number>>,
-  adjacencyList: Record<number, Array<number>>
+  adjacencyList: Record<number, Array<number>>,
+  dummyVerticesArray: Array<number>
 ): Record<number, { x: number; y: number }> {
-  let bestCoordinates = getInitialCoordinates(layers);
-  let minimalIntersections = Object.keys(bestCoordinates).reduce(
-    (acc, vertex) =>
-      acc +
-      numberOfEdgesIntersectedWithNodes(
-        parseInt(vertex),
-        adjacencyList,
-        bestCoordinates
-      ),
-    0
-  );
-  let intersections: number = minimalIntersections + 1;
-  let coordinates: Record<number, { x: number; y: number }> = {};
-  let iterationCounter = layers.length * 6;
-
-  while (minimalIntersections < intersections || iterationCounter !== 0) {
-    coordinates = getNextCoordinates(bestCoordinates);
-
-    intersections = Object.keys(coordinates).reduce(
-      (acc, vertex) =>
-        acc +
-        numberOfEdgesIntersectedWithNodes(
-          parseInt(vertex),
-          adjacencyList,
-          bestCoordinates
-        ),
-      0
-    );
-    iterationCounter -= 1;
-
-    if (minimalIntersections > intersections) {
-      bestCoordinates = coordinates;
-      minimalIntersections = intersections;
-    }
-  }
+  const bestCoordinates = getInitialCoordinates(layers, dummyVerticesArray);
+  // let minimalIntersections = Object.keys(bestCoordinates).reduce(
+  //   (acc, vertex) =>
+  //     acc +
+  //     numberOfEdgesIntersectedWithNodes(
+  //       parseInt(vertex),
+  //       adjacencyList,
+  //       bestCoordinates
+  //     ),
+  //   0
+  // );
+  // let intersections: number = minimalIntersections + 1;
+  // let coordinates: Record<number, { x: number; y: number }> = {};
+  // let iterationCounter = layers.length * 6;
+  //
+  // while (minimalIntersections < intersections || iterationCounter !== 0) {
+  //   coordinates = getNextCoordinates(bestCoordinates);
+  //
+  //   intersections = Object.keys(coordinates).reduce(
+  //     (acc, vertex) =>
+  //       acc +
+  //       numberOfEdgesIntersectedWithNodes(
+  //         parseInt(vertex),
+  //         adjacencyList,
+  //         bestCoordinates
+  //       ),
+  //     0
+  //   );
+  //   iterationCounter -= 1;
+  //
+  //   if (minimalIntersections > intersections) {
+  //     bestCoordinates = coordinates;
+  //     minimalIntersections = intersections;
+  //   }
+  // }
 
   return bestCoordinates;
 }
@@ -50,14 +51,21 @@ function getNextCoordinates(
 }
 
 function getInitialCoordinates(
-  layers: Array<Array<number>>
+  layers: Array<Array<number>>,
+  dummyVerticesArray: Array<number>
 ): Record<number, { x: number; y: number }> {
   const initialCoordinates = {};
   layers.map((layer, layerIndex) => {
-    layer.map((vertex, vertexIndex) => {
+    let distance = 0;
+    layer.map((vertex) => {
+      if (dummyVerticesArray.includes(vertex)) {
+        distance += (1 / 4) * MARGIN_HORIZONTAL + NODE_SIZE / 2;
+      } else {
+        distance += MARGIN_HORIZONTAL;
+      }
       initialCoordinates[vertex] = {
-        x: (vertexIndex + 1) * MARGIN,
-        y: (layerIndex + 1) * MARGIN,
+        x: distance,
+        y: (layerIndex + 1) * MARGIN_VERTICAL,
       };
     });
   });

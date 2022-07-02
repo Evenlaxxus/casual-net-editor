@@ -7,6 +7,7 @@ import {
   removeCycles,
   restoreCycles,
 } from '@/algorithms/graphPlacement/removeCycles';
+import { permutations } from '@/utils/helpers';
 
 export function graphPlacement(
   graph: Array<{
@@ -30,6 +31,7 @@ export function graphPlacement(
     layersWithDummyVertices,
     dummyVertices,
     adjacencyListWithDummyVertices,
+    dummyVerticesArray,
   } = addDummyVertices(layers, acyclicAdjacencyList);
 
   const sortedLayers = sortLayers(
@@ -39,7 +41,8 @@ export function graphPlacement(
 
   const coordinates = assignCoordinates(
     sortedLayers,
-    adjacencyListWithDummyVertices
+    adjacencyListWithDummyVertices,
+    dummyVerticesArray
   );
 
   const dataset = mapToDataset(
@@ -103,6 +106,7 @@ function mapToDataset(
   };
   let linkId = 1;
   let dotId = 1;
+  let dotLinkId = 1;
 
   graph.map((vertex) => {
     dataset.nodes.push({
@@ -127,8 +131,11 @@ function mapToDataset(
       linkId += 1;
     });
 
+    const dotArcs: Array<Array<Dot>> = [];
+
     let row = 1;
     vertex.outgoing.map((target) => {
+      const dotArc: Array<Dot> = [];
       target.map((targetVertex) => {
         dataset.dots.push({
           id: dotId,
@@ -136,13 +143,21 @@ function mapToDataset(
           target: targetVertex,
           row: row,
         });
+        dotArc.push({
+          id: dotId,
+          source: vertex.id,
+          target: targetVertex,
+          row: row,
+        });
         dotId += 1;
       });
+      dotArcs.push(dotArc);
       row += 1;
     });
 
     row = 1;
     vertex.incoming.map((target) => {
+      const dotArc: Array<Dot> = [];
       target.map((targetVertex) => {
         dataset.dots.push({
           id: dotId,
@@ -150,10 +165,52 @@ function mapToDataset(
           target: targetVertex,
           row: row,
         });
+        dotArc.push({
+          id: dotId,
+          source: vertex.id,
+          target: targetVertex,
+          row: row,
+        });
         dotId += 1;
       });
+      dotArcs.push(dotArc);
       row += 1;
     });
+
+    dotArcs.map((dotArc) => {
+      if (dotArc.length > 1) {
+        const arcLinks: Array<Dot> = dotArcLocalSearch(dotArc);
+        for (let i = 0; i < arcLinks.length - 1; i += 1) {
+          dataset.dotsLinks.push({
+            id: dotLinkId,
+            source: arcLinks[i].id,
+            target: arcLinks[i + 1].id,
+            bendPoints: [],
+          });
+          dotLinkId += 1;
+        }
+      }
+    });
   });
+
   return dataset;
+}
+
+function dotArcLocalSearch(dotArc: Array<Dot>): Array<Dot> {
+  const arcPermutations = permutations(dotArc);
+  let bestArc: Array<Dot> = arcPermutations[0];
+  let bestDelta: number = calculateDelta(bestArc);
+  arcPermutations.map((permutation) => {
+    const delta = calculateDelta(permutation);
+
+    if (delta < bestDelta) {
+      bestArc = permutation;
+      bestDelta = delta;
+    }
+  });
+  return bestArc;
+}
+
+function calculateDelta(dotArc: Array<Dot>): number {
+  return 0;
 }
