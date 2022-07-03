@@ -27,9 +27,8 @@ export function setDotsArc(d: Link, dot: any, node: any, baseRadius: number) {
   return curve([[sourceX, sourceY], middlePoint, [targetX, targetY]]);
 }
 
-export function setDotPosition(
+export function getDotPosition(
   d: Dot,
-  axis: string,
   baseRadius: number,
   links: Array<Link>,
   svg: any
@@ -48,19 +47,30 @@ export function setDotPosition(
   const link = svg.select('path#link' + linkData?.id || '').node();
 
   if (isIncoming) {
-    if (axis === 'X')
-      return (link as SVGGeometryElement).getPointAtLength(
-        (link as SVGGeometryElement).getTotalLength() - baseRadius * d.row
-      ).x;
     return (link as SVGGeometryElement).getPointAtLength(
       (link as SVGGeometryElement).getTotalLength() - baseRadius * d.row
-    ).y;
+    );
   } else {
-    if (axis === 'X')
-      return (link as SVGGeometryElement).getPointAtLength(baseRadius * d.row)
-        .x;
-    return (link as SVGGeometryElement).getPointAtLength(baseRadius * d.row).y;
+    return (link as SVGGeometryElement).getPointAtLength(baseRadius * d.row);
   }
+}
+
+export function getDotXPosition(
+  d: Dot,
+  baseRadius: number,
+  links: Array<Link>,
+  svg: any
+) {
+  return getDotPosition(d, baseRadius, links, svg).x;
+}
+
+export function getDotYPosition(
+  d: Dot,
+  baseRadius: number,
+  links: Array<Link>,
+  svg: any
+) {
+  return getDotPosition(d, baseRadius, links, svg).y;
 }
 
 export const permutations = (arr: Array<any>): Array<any> => {

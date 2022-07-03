@@ -134,52 +134,35 @@ function mapToDataset(
     const dotArcs: Array<Array<Dot>> = [];
 
     let row = 1;
-    vertex.outgoing.map((target) => {
-      const dotArc: Array<Dot> = [];
-      target.map((targetVertex) => {
-        dataset.dots.push({
-          id: dotId,
-          source: vertex.id,
-          target: targetVertex,
-          row: row,
-        });
-        dotArc.push({
-          id: dotId,
-          source: vertex.id,
-          target: targetVertex,
-          row: row,
-        });
-        dotId += 1;
-      });
-      dotArcs.push(dotArc);
-      row += 1;
-    });
+    vertex.outgoing.map(setDotsCallback);
 
     row = 1;
-    vertex.incoming.map((target) => {
+    vertex.incoming.map(setDotsCallback);
+
+    function setDotsCallback(target) {
       const dotArc: Array<Dot> = [];
       target.map((targetVertex) => {
-        dataset.dots.push({
+        const dot = {
           id: dotId,
           source: vertex.id,
           target: targetVertex,
           row: row,
-        });
-        dotArc.push({
-          id: dotId,
-          source: vertex.id,
-          target: targetVertex,
-          row: row,
-        });
+        };
+        dataset.dots.push(dot);
+        dotArc.push(dot);
         dotId += 1;
       });
       dotArcs.push(dotArc);
       row += 1;
-    });
+    }
 
     dotArcs.map((dotArc) => {
       if (dotArc.length > 1) {
-        const arcLinks: Array<Dot> = dotArcLocalSearch(dotArc);
+        const arcLinks: Array<Dot> = dotArcLocalSearch(
+          dotArc,
+          coordinates,
+          dataset.links
+        );
         for (let i = 0; i < arcLinks.length - 1; i += 1) {
           dataset.dotsLinks.push({
             id: dotLinkId,
@@ -196,12 +179,16 @@ function mapToDataset(
   return dataset;
 }
 
-function dotArcLocalSearch(dotArc: Array<Dot>): Array<Dot> {
+function dotArcLocalSearch(
+  dotArc: Array<Dot>,
+  coordinates: Record<number, { x: number; y: number }>,
+  links: Array<Link>
+): Array<Dot> {
   const arcPermutations = permutations(dotArc);
   let bestArc: Array<Dot> = arcPermutations[0];
-  let bestDelta: number = calculateDelta(bestArc);
+  let bestDelta: number = calculateDelta(bestArc, coordinates, links);
   arcPermutations.map((permutation) => {
-    const delta = calculateDelta(permutation);
+    const delta = calculateDelta(permutation, coordinates, links);
 
     if (delta < bestDelta) {
       bestArc = permutation;
@@ -211,6 +198,35 @@ function dotArcLocalSearch(dotArc: Array<Dot>): Array<Dot> {
   return bestArc;
 }
 
-function calculateDelta(dotArc: Array<Dot>): number {
-  return 0;
+function calculateDelta(
+  dotArc: Array<Dot>,
+  coordinates: Record<number, { x: number; y: number }>,
+  links: Array<Link>
+): number {
+  const targets: Array<{ x: number; y: number }> = dotArc.map((dot) => {
+    let linkData = links.find(
+      (e: Link) => e.source === dot.source && e.target === dot.target
+    );
+    if (!linkData) {
+      linkData = links.find(
+        (e: Link) => e.source === dot.target && e.target === dot.source
+      );
+    }
+    if (linkData?.bendPoints.length)
+      return { x: linkData.bendPoints[0][0], y: linkData.bendPoints[0][1] };
+    // TODO fix later
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    return coordinates[linkData.target];
+  });
+
+  let totalLength = 0;
+  for (let i = 0; i < targets.length - 1; i++) {
+    const xDiff: number = targets[i].x - targets[i + 1].x;
+    const yDiff: number = targets[i].y - targets[i + 1].y;
+
+    totalLength += Math.sqrt(xDiff * xDiff + yDiff * yDiff);
+  }
+
+  return totalLength;
 }

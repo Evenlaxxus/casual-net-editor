@@ -12,7 +12,7 @@ import {
   onClickNode,
   onClickNodeAlternative,
 } from '@/utils/eventCallbacks';
-import { setDotPosition, setDotsArc } from '@/utils/helpers';
+import { getDotXPosition, getDotYPosition, setDotsArc } from '@/utils/helpers';
 
 export default {
   SET_DATASET(state, payload) {
@@ -104,10 +104,10 @@ export default {
       .style('fill', 'black')
       .style('cursor', 'pointer')
       .attr('cx', (d: Dot) =>
-        setDotPosition(d, 'X', RADIUS_CONST, state.dataset.links, state.svg)
+        getDotXPosition(d, RADIUS_CONST, state.dataset.links, state.svg)
       )
       .attr('cy', (d: Dot) =>
-        setDotPosition(d, 'Y', RADIUS_CONST, state.dataset.links, state.svg)
+        getDotYPosition(d, RADIUS_CONST, state.dataset.links, state.svg)
       )
       .on('click', onClickDot(state));
   },
