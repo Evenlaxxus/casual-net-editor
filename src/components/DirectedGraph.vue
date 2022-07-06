@@ -7,7 +7,7 @@ import { defineComponent } from 'vue';
 import { mapActions, mapGetters } from 'vuex';
 import { HEIGHT, WIDTH } from '@/utils/consts';
 import { graphPlacement } from '@/algorithms/graphPlacement/graphPlacement';
-import { graph1 } from '@/assets/testGraphDefinitions';
+import { graph1, graph2, graph3 } from '@/assets/testGraphDefinitions';
 
 export default defineComponent({
   name: 'DirectedGraph',
@@ -27,7 +27,7 @@ export default defineComponent({
     ]),
   },
   async created() {
-    await this.setDataset(graphPlacement(graph1, 5));
+    await this.setDataset(graphPlacement(graph2, 5));
   },
   mounted() {
     this.setSvg('svg');

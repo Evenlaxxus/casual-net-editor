@@ -13,7 +13,7 @@ export function setDotsArc(d: Link, dot: any, node: any, baseRadius: number) {
   const targetX = parseFloat(targetDot.getAttribute('cx'));
   const targetY = parseFloat(targetDot.getAttribute('cy'));
 
-  const radius = baseRadius + sourceDot.__data__.row * 10;
+  const radius = baseRadius + sourceDot.__data__.row * 20;
 
   const a: [number, number] = [sourceX - sourceNode.x, sourceY - sourceNode.y];
   const b: [number, number] = [targetX - sourceNode.x, targetY - sourceNode.y];
