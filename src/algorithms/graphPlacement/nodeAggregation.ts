@@ -1,5 +1,5 @@
 import dijkstra from 'dijkstrajs';
-import { clusterData } from '@greenelab/hclust';
+import agglo from 'agglo';
 
 export function getAllPossibleAggregations(
   graph: Array<{
@@ -23,24 +23,20 @@ export function getAllPossibleAggregations(
     );
   });
 
-  const nodeDistance = (arrayA: Array<number>, arrayB: Array<number>): number =>
-    dijkstra.find_path(adjacencyList, arrayA[0], arrayB[0]).length;
+  const nodeDistance = (a: number, b: number): number =>
+    dijkstra.find_path(adjacencyList, a, b).length;
 
-  // const nodeLinkage = (
-  //   setA: Array<number>,
-  //   setB: Array<number>,
-  //   distances: Array<Array<number>>
-  // ): number => {
-  //   let distance = 0;
-  //   for (const a of setA) {
-  //     for (const b of setB) distance += distances[a][b];
-  //   }
-  // };
+  const linkage = ['single', 'average', 'complete'];
+  const result = linkage
+    .map((link) =>
+      agglo(ids, {
+        distance: nodeDistance,
+        linkage: link,
+      })
+    )
+    .flat();
 
-  const { clusters, distances, order, clustersGivenK } = clusterData({
-    data: ids,
-    distance: nodeDistance,
+  result.map((res) => {
+    console.log(res.clusters);
   });
-
-  console.log(clustersGivenK);
 }
