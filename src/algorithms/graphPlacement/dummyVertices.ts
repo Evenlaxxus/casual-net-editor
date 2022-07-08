@@ -7,6 +7,7 @@ export function addDummyVertices(
   layersWithDummyVertices: Array<Array<number>>;
   dummyVertices: Record<number, Record<number, Array<number>>>;
   adjacencyListWithDummyVertices: Record<number, Array<number>>;
+  pathsWithDummyVertices: Record<number, Array<number>>;
   dummyVerticesArray: Array<number>;
 } {
   const dummyVertices: Record<number, Record<number, Array<number>>> = {
@@ -14,6 +15,7 @@ export function addDummyVertices(
   };
   const dummyVerticesArray: Array<number> = [];
   const layersWithDummyVertices: Array<Array<number>> = _.cloneDeep(layers);
+  const pathsWithDummyVertices: Array<Array<number>> = [];
   const adjacencyListWithDummyVertices: Record<
     number,
     Array<number>
@@ -33,6 +35,7 @@ export function addDummyVertices(
         .map((layer) => layer.some((e) => e === parseInt(vertex)))
         .indexOf(true);
       if (vertexLayer - childVertexLayer > 1) {
+        pathsWithDummyVertices.push([parseInt(vertex)]);
         for (let i = vertexLayer - 1; i > childVertexLayer; i--) {
           layersWithDummyVertices[i].push(newVertexId);
 
@@ -52,8 +55,14 @@ export function addDummyVertices(
             ];
           }
           dummyVerticesArray.push(newVertexId);
+          pathsWithDummyVertices[pathsWithDummyVertices.length - 1].push(
+            newVertexId
+          );
           newVertexId += 1;
         }
+        pathsWithDummyVertices[pathsWithDummyVertices.length - 1].push(
+          childVertex
+        );
         adjacencyListWithDummyVertices[parseInt(vertex)].splice(
           adjacencyListWithDummyVertices[parseInt(vertex)].indexOf(childVertex),
           1
@@ -66,6 +75,7 @@ export function addDummyVertices(
     layersWithDummyVertices,
     dummyVertices,
     adjacencyListWithDummyVertices,
+    pathsWithDummyVertices,
     dummyVerticesArray,
   };
 }

@@ -31,6 +31,7 @@ export function graphPlacement(
     layersWithDummyVertices,
     dummyVertices,
     adjacencyListWithDummyVertices,
+    pathsWithDummyVertices,
     dummyVerticesArray,
   } = addDummyVertices(layers, acyclicAdjacencyList);
 
@@ -42,7 +43,8 @@ export function graphPlacement(
   const coordinates = assignCoordinates(
     sortedLayers,
     adjacencyListWithDummyVertices,
-    dummyVerticesArray
+    dummyVerticesArray,
+    pathsWithDummyVertices
   );
 
   const dataset = mapToDataset(

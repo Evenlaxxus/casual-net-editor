@@ -2,25 +2,14 @@ import { MARGIN_HORIZONTAL, MARGIN_VERTICAL, NODE_SIZE } from '@/utils/consts';
 export function assignCoordinates(
   layers: Array<Array<number>>,
   adjacencyList: Record<number, Array<number>>,
-  dummyVerticesArray: Array<number>
+  dummyVerticesArray: Array<number>,
+  pathsWithDummyVertices: Record<number, Array<number>>
 ): Record<number, { x: number; y: number }> {
   const coordinates = getInitialCoordinates(layers, dummyVerticesArray);
 
   const iterationCounter = 1000;
 
-  const verticesWithDummies = Object.keys(adjacencyList)
-    .map((e) => parseInt(e))
-    .map((vertex) => {
-      if (dummyVerticesArray.includes(vertex)) {
-        return adjacencyList[vertex].map((e) => [vertex, e]);
-      }
-      return adjacencyList[vertex]
-        .filter((adjacentVertex) => dummyVerticesArray.includes(adjacentVertex))
-        .map((e) => [vertex, e]);
-    })
-    .filter((e) => e.length);
-
-  console.log(verticesWithDummies);
+  console.log(pathsWithDummyVertices);
 
   // while (minimalIntersections < intersections || iterationCounter !== 0) {
   //   coordinates = getNextCoordinates(coordinates);
