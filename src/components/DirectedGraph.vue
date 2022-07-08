@@ -27,7 +27,7 @@ export default defineComponent({
     ]),
   },
   async created() {
-    await this.setDataset(graphPlacement(graph2, 5));
+    await this.setDataset(graphPlacement(graph1, 5));
   },
   mounted() {
     this.setSvg('svg');

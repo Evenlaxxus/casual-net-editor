@@ -4,43 +4,35 @@ export function assignCoordinates(
   adjacencyList: Record<number, Array<number>>,
   dummyVerticesArray: Array<number>
 ): Record<number, { x: number; y: number }> {
-  const bestCoordinates = getInitialCoordinates(layers, dummyVerticesArray);
-  // let minimalIntersections = Object.keys(bestCoordinates).reduce(
-  //   (acc, vertex) =>
-  //     acc +
-  //     numberOfEdgesIntersectedWithNodes(
-  //       parseInt(vertex),
-  //       adjacencyList,
-  //       bestCoordinates
-  //     ),
-  //   0
-  // );
-  // let intersections: number = minimalIntersections + 1;
-  // let coordinates: Record<number, { x: number; y: number }> = {};
-  // let iterationCounter = layers.length * 6;
-  //
+  const coordinates = getInitialCoordinates(layers, dummyVerticesArray);
+
+  const iterationCounter = 1000;
+
+  const verticesWithDummies = Object.keys(adjacencyList)
+    .map((e) => parseInt(e))
+    .map((vertex) => {
+      if (dummyVerticesArray.includes(vertex)) {
+        return adjacencyList[vertex].map((e) => [vertex, e]);
+      }
+      return adjacencyList[vertex]
+        .filter((adjacentVertex) => dummyVerticesArray.includes(adjacentVertex))
+        .map((e) => [vertex, e]);
+    })
+    .filter((e) => e.length);
+
+  console.log(verticesWithDummies);
+
   // while (minimalIntersections < intersections || iterationCounter !== 0) {
-  //   coordinates = getNextCoordinates(bestCoordinates);
+  //   coordinates = getNextCoordinates(coordinates);
   //
-  //   intersections = Object.keys(coordinates).reduce(
-  //     (acc, vertex) =>
-  //       acc +
-  //       numberOfEdgesIntersectedWithNodes(
-  //         parseInt(vertex),
-  //         adjacencyList,
-  //         bestCoordinates
-  //       ),
-  //     0
-  //   );
+  //   Object.keys(coordinates)
+  //     .map((e) => parseInt(e))
+  //     .map((coord) => {});
+  //
   //   iterationCounter -= 1;
-  //
-  //   if (minimalIntersections > intersections) {
-  //     bestCoordinates = coordinates;
-  //     minimalIntersections = intersections;
-  //   }
   // }
 
-  return bestCoordinates;
+  return coordinates;
 }
 
 function getNextCoordinates(
@@ -70,6 +62,14 @@ function getInitialCoordinates(
     });
   });
   return initialCoordinates;
+}
+
+function mse(a, b) {
+  let error = 0;
+  for (let i = 0; i < a.length; i++) {
+    error += Math.pow(b[i] - a[i], 2);
+  }
+  return error / a.length;
 }
 
 function numberOfEdgesIntersectedWithNodes(
