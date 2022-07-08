@@ -87,7 +87,7 @@ export default {
       .attr('id', (d: Node) => 'node' + d.id)
       .attr('r', NODE_SIZE)
       .attr('stroke', 'black')
-      .attr('stroke-width', 2)
+      .attr('stroke-width', 1)
       .attr('cx', (d: Node) => d.x as number)
       .attr('cy', (d: Node) => d.y as number)
       .on('click', onClickNode(state));
@@ -119,9 +119,14 @@ export default {
       .enter()
       .append('text')
       .text((d: Node) => d.text)
-      .style('font-size', '.875rem')
+      .attr('dy', '.3em')
+      .style('text-anchor', 'middle')
+      .style(
+        'font-size',
+        (d) => Math.round((NODE_SIZE / 3) * (10 / d.text.length)) + 'px'
+      )
       .attr('id', (d: Node) => 'text' + d.id)
-      .attr('x', (d: Node) => (d.x as number) - NODE_SIZE)
+      .attr('x', (d: Node) => d.x as number)
       .attr('y', (d: Node) => d.y as number);
   },
   SET_DOT_LINKS(state) {
