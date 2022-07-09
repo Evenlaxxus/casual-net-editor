@@ -110,7 +110,11 @@ function mapToDataset(
   let dotId = 1;
   let dotLinkId = 1;
 
+  const dotArcs: Record<number, Array<Array<Dot>>> = {};
+
   graph.map((vertex) => {
+    dotArcs[vertex.id] = [];
+
     dataset.nodes.push({
       id: vertex.id,
       x: coordinates[vertex.id].x,
@@ -133,8 +137,6 @@ function mapToDataset(
       linkId += 1;
     });
 
-    const dotArcs: Array<Array<Dot>> = [];
-
     let row = 1;
     vertex.outgoing.map(setDotsCallback);
 
@@ -154,11 +156,13 @@ function mapToDataset(
         dotArc.push(dot);
         dotId += 1;
       });
-      dotArcs.push(dotArc);
+      dotArcs[vertex.id] = [...dotArcs[vertex.id], dotArc];
       row += 1;
     }
+  });
 
-    dotArcs.map((dotArc) => {
+  graph.map((vertex) => {
+    dotArcs[vertex.id].map((dotArc) => {
       if (dotArc.length > 1) {
         const arcLinks: Array<Dot> = dotArcLocalSearch(
           dotArc,
@@ -177,7 +181,6 @@ function mapToDataset(
       }
     });
   });
-
   return dataset;
 }
 
