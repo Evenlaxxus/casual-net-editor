@@ -111,13 +111,11 @@ function assignLayers(
   const numberOfVertices = Object.keys(sortedGraph).length;
 
   while (used.length < numberOfVertices) {
-    const u: number = parseInt(
-      Object.keys(sortedGraph).reduce((max, val) =>
-        !used.includes(parseInt(val)) && sortedGraph[max] > sortedGraph[val]
-          ? max
-          : val
-      )
-    );
+    const u: number = Object.keys(sortedGraph)
+      .map((e) => parseInt(e))
+      .reduce((max, val) =>
+        !used.includes(val) && sortedGraph[max] > sortedGraph[val] ? max : val
+      );
     if (
       layers[layers.length - 1].length < W &&
       adjacencyList[u].every((node) =>

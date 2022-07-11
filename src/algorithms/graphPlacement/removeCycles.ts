@@ -10,29 +10,33 @@ export function removeCycles(
   const outgoing: Record<number, Array<number>> = _.cloneDeep(
     incomingAdjacencyList
   );
-  Object.keys(adjacencyList).map((vertex) => {
-    if (
-      incoming[parseInt(vertex)].length >= outgoing[parseInt(vertex)].length
-    ) {
-      acyclic[vertex] = incoming[vertex];
-    } else {
-      acyclic[vertex] = outgoing[vertex];
-    }
-    Object.keys(adjacencyList).map((e) => {
-      incoming[parseInt(e)] = incoming[e].filter((v) => v !== parseInt(vertex));
-      outgoing[parseInt(e)] = outgoing[e].filter((v) => v !== parseInt(vertex));
-    });
-  });
-  Object.keys(adjacencyList).map((vertex) => {
-    adjacencyList[vertex].map((childVertex) => {
-      if (
-        !acyclic[vertex].includes(childVertex) &&
-        !acyclic[childVertex].includes(parseInt(vertex))
-      ) {
-        acyclic[childVertex].push(parseInt(vertex));
+  Object.keys(adjacencyList)
+    .map((e) => parseInt(e))
+    .map((vertex) => {
+      if (incoming[vertex].length >= outgoing[vertex].length) {
+        acyclic[vertex] = incoming[vertex];
+      } else {
+        acyclic[vertex] = outgoing[vertex];
       }
+      Object.keys(adjacencyList)
+        .map((e) => parseInt(e))
+        .map((e) => {
+          incoming[e] = incoming[e].filter((v) => v !== vertex);
+          outgoing[e] = outgoing[e].filter((v) => v !== vertex);
+        });
     });
-  });
+  Object.keys(adjacencyList)
+    .map((e) => parseInt(e))
+    .map((vertex) => {
+      adjacencyList[vertex].map((childVertex) => {
+        if (
+          !acyclic[vertex].includes(childVertex) &&
+          !acyclic[childVertex].includes(vertex)
+        ) {
+          acyclic[childVertex].push(vertex);
+        }
+      });
+    });
   return acyclic;
 }
 
