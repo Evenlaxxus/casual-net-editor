@@ -12,6 +12,7 @@ export function removeCycles(
   );
   Object.keys(adjacencyList)
     .map((e) => parseInt(e))
+    .sort((a, b) => adjacencyList[a].length - adjacencyList[b].length)
     .map((vertex) => {
       if (incoming[vertex].length >= outgoing[vertex].length) {
         acyclic[vertex] = incoming[vertex];
@@ -20,6 +21,7 @@ export function removeCycles(
       }
       Object.keys(adjacencyList)
         .map((e) => parseInt(e))
+        .sort((a, b) => adjacencyList[a].length - adjacencyList[b].length)
         .map((e) => {
           incoming[e] = incoming[e].filter((v) => v !== vertex);
           outgoing[e] = outgoing[e].filter((v) => v !== vertex);
@@ -27,6 +29,7 @@ export function removeCycles(
     });
   Object.keys(adjacencyList)
     .map((e) => parseInt(e))
+    .sort((a, b) => adjacencyList[a].length - adjacencyList[b].length)
     .map((vertex) => {
       adjacencyList[vertex].map((childVertex) => {
         if (
