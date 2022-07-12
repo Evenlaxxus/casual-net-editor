@@ -54,25 +54,44 @@ export default {
       .attr('fill', 'none')
       .attr('stroke-width', STROKE_WIDTH)
       .attr('marker-end', 'url(#arrow)')
-      .attr('d', (d: Link) =>
-        curve([
-          calculateOffsetPosition(
-            state.dataset.nodes.find((e) => e.id === d.target).x,
-            state.dataset.nodes.find((e) => e.id === d.target).y,
-            state.dataset.nodes.find((e) => e.id === d.source).x,
-            state.dataset.nodes.find((e) => e.id === d.source).y,
-            NODE_SIZE
-          ),
-          ...d.bendPoints,
-          calculateOffsetPosition(
-            state.dataset.nodes.find((e) => e.id === d.source).x,
-            state.dataset.nodes.find((e) => e.id === d.source).y,
-            state.dataset.nodes.find((e) => e.id === d.target).x,
-            state.dataset.nodes.find((e) => e.id === d.target).y,
-            NODE_SIZE
-          ),
-        ])
-      )
+      .attr('d', (d: Link) => {
+        if (d.bendPoints?.length) {
+          return curve([
+            calculateOffsetPosition(
+              state.dataset.nodes.find((e) => e.id === d.source).x,
+              state.dataset.nodes.find((e) => e.id === d.source).y,
+              d.bendPoints[0][0],
+              d.bendPoints[0][1],
+              NODE_SIZE
+            ),
+            ...d.bendPoints,
+            calculateOffsetPosition(
+              state.dataset.nodes.find((e) => e.id === d.target).x,
+              state.dataset.nodes.find((e) => e.id === d.target).y,
+              d.bendPoints[d.bendPoints.length - 1][0],
+              d.bendPoints[d.bendPoints.length - 1][1],
+              NODE_SIZE
+            ),
+          ]);
+        } else {
+          return curve([
+            calculateOffsetPosition(
+              state.dataset.nodes.find((e) => e.id === d.source).x,
+              state.dataset.nodes.find((e) => e.id === d.source).y,
+              state.dataset.nodes.find((e) => e.id === d.target).x,
+              state.dataset.nodes.find((e) => e.id === d.target).y,
+              NODE_SIZE
+            ),
+            calculateOffsetPosition(
+              state.dataset.nodes.find((e) => e.id === d.target).x,
+              state.dataset.nodes.find((e) => e.id === d.target).y,
+              state.dataset.nodes.find((e) => e.id === d.source).x,
+              state.dataset.nodes.find((e) => e.id === d.source).y,
+              NODE_SIZE
+            ),
+          ]);
+        }
+      })
       .on('click', onClickLink(state));
   },
   SET_NODE(state) {
@@ -314,12 +333,20 @@ function calculateOffsetPosition(
   y2: number,
   offset: number
 ): [newX2: number, newY2: number] {
-  const a = x1 - x2;
-  const b = y1 - y2;
-  const c = Math.hypot(a, b);
+  // const a = x1 - x2;
+  // const b = y1 - y2;
+  // const c = Math.hypot(a, b);
+  //
+  // const angleSine = a / c;
+  // const angleCosine = b / c;
+  //
+  // return [x2 + offset * angleSine, y2 + offset * angleCosine];
 
-  const angleSine = a / c;
-  const angleCosine = b / c;
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const dist = Math.sqrt(dx * dx + dy * dy);
+  const newX = x1 + (dx * offset) / dist;
+  const newY = y1 + (dy * offset) / dist;
 
-  return [x2 + offset * angleSine, y2 + offset * angleCosine];
+  return [newX, newY];
 }
