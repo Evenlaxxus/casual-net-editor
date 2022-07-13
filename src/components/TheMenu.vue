@@ -120,9 +120,12 @@ export default defineComponent({
       this.clearAll();
     },
     clearAll() {
-      this.getNodeById('#node' + this.selectedNode).style('fill', 'lightblue');
+      this.getNodeById('#node' + this.selectedNode).style(
+        'fill',
+        'transparent'
+      );
       this.selectedTargetNodes.map((e) =>
-        this.getNodeById('#node' + e).style('fill', 'lightblue')
+        this.getNodeById('#node' + e).style('fill', 'transparent')
       );
       this.setSelectedNode(null);
       this.setSelectedLink(null);

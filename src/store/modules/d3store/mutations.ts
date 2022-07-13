@@ -1,24 +1,23 @@
+import * as d3 from 'd3';
 import { Dot, Link, Node } from '@/utils/types';
 import {
   DOT_SIZE,
-  NODE_HEIGHT,
-  NODE_WIDTH,
+  NODE_SIZE,
   RADIUS_CONST,
   STROKE_WIDTH,
 } from '@/utils/consts';
 import {
-  dragEnd,
-  dragged,
-  dragStart,
   onClickDot,
   onClickLink,
   onClickNode,
   onClickNodeAlternative,
 } from '@/utils/eventCallbacks';
-import * as d3 from 'd3';
-import { setDotPosition, setDotsArc } from '@/utils/helpers';
+import { getDotXPosition, getDotYPosition, setDotsArc } from '@/utils/helpers';
 
 export default {
+  SET_DATASET(state, payload) {
+    state.dataset = payload;
+  },
   SET_SVG(state, payload) {
     state.svg = payload;
     state.svg.append('g').attr('class', 'links');
@@ -27,53 +26,89 @@ export default {
     state.svg.append('g').attr('class', 'node-id');
     state.svg.append('g').attr('class', 'dot-links');
     state.svg.append('g').attr('class', 'text');
+
+    state.svg
+      .append('defs')
+      .append('marker')
+      .attr('id', 'arrow')
+      .attr('refX', 5)
+      .attr('refY', 2)
+      .attr('markerWidth', 6)
+      .attr('markerHeight', 4)
+      .attr('orient', 'auto-start-reverse')
+      .append('path')
+      .attr('d', 'M 0,0 V 4 L6,2 Z')
+      .attr('stroke', 'black');
   },
   SET_LINK(state) {
+    const curve = d3.line().curve(d3.curveNatural);
     state.link = state.svg
       .select('g.links')
-      .selectAll('line')
+      .selectAll('path')
       .data(state.dataset.links)
       .enter()
-      .append('line')
+      .append('path')
       .style('cursor', 'pointer')
       .attr('id', (d: Link) => 'link' + d.id)
       .attr('stroke', 'black')
+      .attr('fill', 'none')
       .attr('stroke-width', STROKE_WIDTH)
-      .attr(
-        'x1',
-        (d: Link) => state.dataset.nodes.find((e) => e.id === d.source).x
-      )
-      .attr(
-        'y1',
-        (d: Link) => state.dataset.nodes.find((e) => e.id === d.source).y
-      )
-      .attr(
-        'x2',
-        (d: Link) => state.dataset.nodes.find((e) => e.id === d.target).x
-      )
-      .attr(
-        'y2',
-        (d: Link) => state.dataset.nodes.find((e) => e.id === d.target).y
-      )
+      .attr('marker-end', 'url(#arrow)')
+      .attr('d', (d: Link) => {
+        if (d.bendPoints?.length) {
+          return curve([
+            calculateOffsetPosition(
+              state.dataset.nodes.find((e) => e.id === d.source).x,
+              state.dataset.nodes.find((e) => e.id === d.source).y,
+              d.bendPoints[0][0],
+              d.bendPoints[0][1],
+              NODE_SIZE
+            ),
+            ...d.bendPoints,
+            calculateOffsetPosition(
+              state.dataset.nodes.find((e) => e.id === d.target).x,
+              state.dataset.nodes.find((e) => e.id === d.target).y,
+              d.bendPoints[d.bendPoints.length - 1][0],
+              d.bendPoints[d.bendPoints.length - 1][1],
+              NODE_SIZE
+            ),
+          ]);
+        } else {
+          return curve([
+            calculateOffsetPosition(
+              state.dataset.nodes.find((e) => e.id === d.source).x,
+              state.dataset.nodes.find((e) => e.id === d.source).y,
+              state.dataset.nodes.find((e) => e.id === d.target).x,
+              state.dataset.nodes.find((e) => e.id === d.target).y,
+              NODE_SIZE
+            ),
+            calculateOffsetPosition(
+              state.dataset.nodes.find((e) => e.id === d.target).x,
+              state.dataset.nodes.find((e) => e.id === d.target).y,
+              state.dataset.nodes.find((e) => e.id === d.source).x,
+              state.dataset.nodes.find((e) => e.id === d.source).y,
+              NODE_SIZE
+            ),
+          ]);
+        }
+      })
       .on('click', onClickLink(state));
   },
   SET_NODE(state) {
     state.node = state.svg
       .select('g.nodes')
-      .selectAll('rect')
+      .selectAll('circle')
       .data(state.dataset.nodes)
       .enter()
-      .append('rect')
-      .style('fill', 'lightblue')
+      .append('circle')
       .style('cursor', 'pointer')
+      .style('fill', 'transparent')
       .attr('id', (d: Node) => 'node' + d.id)
-      .attr('width', NODE_WIDTH)
-      .attr('height', NODE_HEIGHT)
-      .attr('x', (d: Node) => (d.x as number) - NODE_WIDTH / 2)
-      .attr('y', (d: Node) => (d.y as number) - NODE_HEIGHT / 2)
-      .call(
-        d3.drag().on('start', dragStart).on('drag', dragged).on('end', dragEnd)
-      )
+      .attr('r', NODE_SIZE)
+      .attr('stroke', 'black')
+      .attr('stroke-width', 1)
+      .attr('cx', (d: Node) => d.x as number)
+      .attr('cy', (d: Node) => d.y as number)
       .on('click', onClickNode(state));
   },
   SET_DOT(state) {
@@ -87,23 +122,15 @@ export default {
       .attr('r', DOT_SIZE)
       .style('fill', 'black')
       .style('cursor', 'pointer')
-      .attr('cx', (d: Dot) => setDotPosition(d, 'X', RADIUS_CONST, state.node))
-      .attr('cy', (d: Dot) => setDotPosition(d, 'Y', RADIUS_CONST, state.node))
+      .attr('cx', (d: Dot) =>
+        getDotXPosition(d, RADIUS_CONST, state.dataset.links, state.svg)
+      )
+      .attr('cy', (d: Dot) =>
+        getDotYPosition(d, RADIUS_CONST, state.dataset.links, state.svg)
+      )
       .on('click', onClickDot(state));
   },
-  SET_NODE_ID_TEXT(state) {
-    state.nodeIdText = state.svg
-      .select('g.node-id')
-      .selectAll('text')
-      .data(state.dataset.nodes)
-      .enter()
-      .append('text')
-      .text((d: Node) => d.id)
-      .attr('id', (d: Node) => 'node-id' + d.id)
-      .attr('x', (d: Node) => (d.x as number) - 5)
-      .attr('y', (d: Node) => (d.y as number) + 5);
-  },
-  SET_NODE_DESCRIPTION_TEXT(state) {
+  SET_NODE_TEXT(state) {
     state.nodeIdText = state.svg
       .select('g.text')
       .selectAll('text')
@@ -111,10 +138,15 @@ export default {
       .enter()
       .append('text')
       .text((d: Node) => d.text)
-      .style('font-size', '.875rem')
+      .attr('dy', '.3em')
+      .style('text-anchor', 'middle')
+      .style(
+        'font-size',
+        (d) => Math.round((NODE_SIZE / 3) * (10 / d.text.length)) + 'px'
+      )
       .attr('id', (d: Node) => 'text' + d.id)
-      .attr('x', (d: Node) => (d.x as number) - NODE_WIDTH / 2)
-      .attr('y', (d: Node) => (d.y as number) + NODE_HEIGHT);
+      .attr('x', (d: Node) => d.x as number)
+      .attr('y', (d: Node) => d.y as number);
   },
   SET_DOT_LINKS(state) {
     state.dotLinks = state.svg
@@ -293,3 +325,28 @@ export default {
       .enter();
   },
 };
+
+function calculateOffsetPosition(
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+  offset: number
+): [newX2: number, newY2: number] {
+  // const a = x1 - x2;
+  // const b = y1 - y2;
+  // const c = Math.hypot(a, b);
+  //
+  // const angleSine = a / c;
+  // const angleCosine = b / c;
+  //
+  // return [x2 + offset * angleSine, y2 + offset * angleCosine];
+
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const dist = Math.sqrt(dx * dx + dy * dy);
+  const newX = x1 + (dx * offset) / dist;
+  const newY = y1 + (dy * offset) / dist;
+
+  return [newX, newY];
+}

@@ -6,13 +6,14 @@
 import { defineComponent } from 'vue';
 import { mapActions, mapGetters } from 'vuex';
 import { HEIGHT, WIDTH } from '@/utils/consts';
+import { graphPlacement } from '@/algorithms/graphPlacement/graphPlacement';
+import { graph1, graph2, graph3 } from '@/assets/testGraphDefinitions';
 
 export default defineComponent({
   name: 'DirectedGraph',
   data: () => ({
     windowWidth: WIDTH,
     windowHeight: HEIGHT,
-    RADIUS_CONST: 30,
   }),
   computed: {
     ...mapGetters([
@@ -24,6 +25,9 @@ export default defineComponent({
       'dotLinks',
       'nodeIdText',
     ]),
+  },
+  async created() {
+    await this.setDataset(graphPlacement(graph2, 5));
   },
   mounted() {
     this.setSvg('svg');
@@ -37,16 +41,15 @@ export default defineComponent({
       'initDots',
       'initDotLinks',
       'initNodeIdText',
-      'initNodeDescriptionText',
+      'initNodeText',
+      'setDataset',
     ]),
     generateGraph() {
       this.initLink();
 
       this.initNode();
 
-      this.initNodeIdText();
-
-      this.initNodeDescriptionText();
+      this.initNodeText();
 
       this.initDots();
 

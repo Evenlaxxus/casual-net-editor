@@ -13,7 +13,7 @@ export function setDotsArc(d: Link, dot: any, node: any, baseRadius: number) {
   const targetX = parseFloat(targetDot.getAttribute('cx'));
   const targetY = parseFloat(targetDot.getAttribute('cy'));
 
-  const radius = baseRadius + sourceDot.__data__.row * 10;
+  const radius = baseRadius + sourceDot.__data__.row * 20;
 
   const a: [number, number] = [sourceX - sourceNode.x, sourceY - sourceNode.y];
   const b: [number, number] = [targetX - sourceNode.x, targetY - sourceNode.y];
@@ -27,17 +27,62 @@ export function setDotsArc(d: Link, dot: any, node: any, baseRadius: number) {
   return curve([[sourceX, sourceY], middlePoint, [targetX, targetY]]);
 }
 
-export function setDotPosition(d: Dot, axis: string, baseRadius: number, node) {
-  const sourceNode = node.data().find((e: Node) => e.id === d.source);
-  const targetNode = node.data().find((e: Node) => e.id === d.target);
-  const center = [sourceNode.x, sourceNode.y];
-  const radius = baseRadius + d.row * 10;
-  const target = [targetNode.x, targetNode.y];
+export function getDotPosition(
+  d: Dot,
+  baseRadius: number,
+  links: Array<Link>,
+  svg: any
+) {
+  let isIncoming = false;
+  let linkData = links.find(
+    (e: Link) => e.source === d.source && e.target === d.target
+  );
+  if (!linkData) {
+    linkData = links.find(
+      (e: Link) => e.source === d.target && e.target === d.source
+    );
+    isIncoming = true;
+  }
 
-  let v = [target[0] - center[0], target[1] - center[1]];
-  const vLen = Math.hypot(v[0], v[1]);
-  v = [v[0] / vLen, v[1] / vLen];
-  const point = [center[0] + v[0] * radius, center[1] + v[1] * radius];
-  if (axis === 'X') return point[0];
-  return point[1];
+  const link = svg.select('path#link' + linkData?.id || '').node();
+
+  if (isIncoming) {
+    return (link as SVGGeometryElement).getPointAtLength(
+      (link as SVGGeometryElement).getTotalLength() - baseRadius * d.row
+    );
+  } else {
+    return (link as SVGGeometryElement).getPointAtLength(baseRadius * d.row);
+  }
 }
+
+export function getDotXPosition(
+  d: Dot,
+  baseRadius: number,
+  links: Array<Link>,
+  svg: any
+) {
+  return getDotPosition(d, baseRadius, links, svg).x;
+}
+
+export function getDotYPosition(
+  d: Dot,
+  baseRadius: number,
+  links: Array<Link>,
+  svg: any
+) {
+  return getDotPosition(d, baseRadius, links, svg).y;
+}
+
+export const permutations = (arr: Array<any>): Array<any> => {
+  if (arr.length <= 2) return arr.length === 2 ? [arr, [arr[1], arr[0]]] : arr;
+  return arr.reduce(
+    (acc, item, i) =>
+      acc.concat(
+        permutations([...arr.slice(0, i), ...arr.slice(i + 1)]).map((val) => [
+          item,
+          ...val,
+        ])
+      ),
+    []
+  );
+};

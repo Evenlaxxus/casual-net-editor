@@ -9,6 +9,7 @@ export type Link = {
   id: number;
   source: number;
   target: number;
+  bendPoints: Array<[number, number]>;
 };
 
 export type Dot = {
@@ -22,19 +23,20 @@ export interface HTMLInputEvent extends InputEvent {
   target: HTMLInputElement & EventTarget;
 }
 
+export interface Dataset {
+  nodes: Array<Node>;
+  links: Array<Link>;
+  dots: Array<Dot>;
+  dotsLinks: Array<Link>;
+}
+
 export interface State {
   svg: any;
-  dataset: {
-    nodes: Array<Node>;
-    links: Array<Link>;
-    dots: Array<Dot>;
-    dotsLinks: Array<Link>;
-  };
-  link: any;
-  node: any;
-  dot: any;
-  nodeIdText: any;
-  dotLinks: any;
+  dataset: Dataset;
+  link: Link;
+  node: Node;
+  dot: Dot;
+  dotLinks: Link;
   selectedNode: number | null;
   selectedTargetNodes: Array<number>;
   selectedLink: number | null;
