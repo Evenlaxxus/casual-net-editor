@@ -86,3 +86,44 @@ export const permutations = (arr: Array<any>): Array<any> => {
     []
   );
 };
+
+export function getAggregationRectCoords(
+  d: {
+    id: number;
+    nodes: Array<number>;
+  },
+  nodes: Array<Node>,
+  nodeSize: number
+): { x: number; y: number } {
+  const includedNodes = nodes.filter((e) => d.nodes.includes(e.id));
+  const minNode = includedNodes.reduce(
+    (min, node) => (min.x >= node.x && min.y >= node.y ? node : min),
+    includedNodes[0]
+  );
+
+  return { x: minNode.x - nodeSize * 1.5, y: minNode.y - nodeSize * 1.5 };
+}
+
+export function getAggregationRectSize(
+  d: {
+    id: number;
+    nodes: Array<number>;
+  },
+  nodes: Array<Node>,
+  nodeSize: number
+): { w: number; h: number } {
+  const includedNodes = nodes.filter((e) => d.nodes.includes(e.id));
+  const minNode = includedNodes.reduce(
+    (min, node) => (min.x >= node.x && min.y >= node.y ? node : min),
+    includedNodes[0]
+  );
+  const maxNode = includedNodes.reduce(
+    (max, node) => (max.x <= node.x && max.y <= node.y ? node : max),
+    includedNodes[0]
+  );
+
+  return {
+    w: maxNode.x - minNode.x + nodeSize * 3,
+    h: maxNode.y - minNode.y + nodeSize * 3,
+  };
+}

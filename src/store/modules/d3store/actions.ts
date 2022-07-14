@@ -102,4 +102,15 @@ export default {
     commit('SET_DOT');
     commit('SET_DOT_LINKS');
   },
+
+  setAggregations({ commit }, payload) {
+    commit(
+      'SET_AGGREGATIONS',
+      payload.map((e, index) => ({ id: index, nodes: e }))
+    );
+  },
+
+  drawAggregations({ commit }) {
+    commit('DRAW_AGGREGATIONS');
+  },
 };

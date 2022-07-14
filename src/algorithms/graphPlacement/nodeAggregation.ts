@@ -36,7 +36,21 @@ export function getAllPossibleAggregations(
     )
     .flat();
 
-  result.map((res) => {
-    console.log(res.clusters);
-  });
+  return result
+    .map((res) =>
+      res.clusters
+        .filter((e) => e.length > 1)
+        .map((e) => e.flat())
+        .flat()
+    )
+    .reduce(
+      (rest, val) =>
+        rest.some(
+          (e) =>
+            e.length === val.length && e.every((item) => val.includes(item))
+        )
+          ? rest
+          : [...rest, val.sort()],
+      []
+    );
 }

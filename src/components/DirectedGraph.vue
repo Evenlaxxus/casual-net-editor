@@ -29,7 +29,6 @@ export default defineComponent({
   },
   async created() {
     await this.setDataset(graphPlacement(graph2, 5));
-    getAllPossibleAggregations(graph1);
   },
   mounted() {
     this.setSvg('svg');
@@ -45,6 +44,8 @@ export default defineComponent({
       'initNodeIdText',
       'initNodeText',
       'setDataset',
+      'setAggregations',
+      'drawAggregations',
     ]),
     generateGraph() {
       this.initLink();
@@ -56,6 +57,10 @@ export default defineComponent({
       this.initDots();
 
       this.initDotLinks();
+
+      this.setAggregations(getAllPossibleAggregations(graph2));
+
+      this.drawAggregations();
     },
   },
 });

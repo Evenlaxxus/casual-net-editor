@@ -14,6 +14,8 @@ export const d3store = {
     selectedTargetNodes: [],
     selectedLink: null,
     selectedDot: null,
+    aggregations: [],
+    aggregationRects: [],
   }),
   mutations,
   actions,

@@ -12,7 +12,13 @@ import {
   onClickNode,
   onClickNodeAlternative,
 } from '@/utils/eventCallbacks';
-import { getDotXPosition, getDotYPosition, setDotsArc } from '@/utils/helpers';
+import {
+  getAggregationRectCoords,
+  getAggregationRectSize,
+  getDotXPosition,
+  getDotYPosition,
+  setDotsArc,
+} from '@/utils/helpers';
 
 export default {
   SET_DATASET(state, payload) {
@@ -26,6 +32,7 @@ export default {
     state.svg.append('g').attr('class', 'node-id');
     state.svg.append('g').attr('class', 'dot-links');
     state.svg.append('g').attr('class', 'text');
+    state.svg.append('g').attr('class', 'aggregations');
 
     state.svg
       .append('defs')
@@ -324,6 +331,46 @@ export default {
       .data(state.dataset.nodes)
       .enter();
   },
+
+  SET_AGGREGATIONS(state, payload) {
+    state.aggregations = payload;
+  },
+
+  DRAW_AGGREGATIONS(state) {
+    state.aggregationRects = state.svg
+      .select('g.aggregations')
+      .selectAll('rect')
+      .data(state.aggregations)
+      .enter()
+      .append('rect')
+      .style('fill', 'transparent')
+      .attr(
+        'id',
+        (d: { id: number; nodes: Array<number> }) => 'aggregation' + d.id
+      )
+      .attr('stroke', 'black')
+      .attr('stroke-width', 1)
+      .attr(
+        'x',
+        (d: { id: number; nodes: Array<number> }) =>
+          getAggregationRectCoords(d, state.dataset.nodes, NODE_SIZE).x
+      )
+      .attr(
+        'y',
+        (d: { id: number; nodes: Array<number> }) =>
+          getAggregationRectCoords(d, state.dataset.nodes, NODE_SIZE).y
+      )
+      .attr(
+        'width',
+        (d: { id: number; nodes: Array<number> }) =>
+          getAggregationRectSize(d, state.dataset.nodes, NODE_SIZE).w
+      )
+      .attr(
+        'height',
+        (d: { id: number; nodes: Array<number> }) =>
+          getAggregationRectSize(d, state.dataset.nodes, NODE_SIZE).h
+      );
+  },
 };
 
 function calculateOffsetPosition(
@@ -333,15 +380,6 @@ function calculateOffsetPosition(
   y2: number,
   offset: number
 ): [newX2: number, newY2: number] {
-  // const a = x1 - x2;
-  // const b = y1 - y2;
-  // const c = Math.hypot(a, b);
-  //
-  // const angleSine = a / c;
-  // const angleCosine = b / c;
-  //
-  // return [x2 + offset * angleSine, y2 + offset * angleCosine];
-
   const dx = x2 - x1;
   const dy = y2 - y1;
   const dist = Math.sqrt(dx * dx + dy * dy);
