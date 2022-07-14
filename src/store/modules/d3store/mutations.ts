@@ -111,6 +111,7 @@ export default {
       .style('cursor', 'pointer')
       .style('fill', 'transparent')
       .attr('id', (d: Node) => 'node' + d.id)
+      .attr('class', 'node')
       .attr('r', NODE_SIZE)
       .attr('stroke', 'black')
       .attr('stroke-width', 1)
@@ -149,7 +150,10 @@ export default {
       .style('text-anchor', 'middle')
       .style(
         'font-size',
-        (d) => Math.round((NODE_SIZE / 3) * (10 / d.text.length)) + 'px'
+        (d) =>
+          Math.round(
+            (NODE_SIZE / 3) * (10 / (d.text.length === 1 ? 5 : d.text.length))
+          ) + 'px'
       )
       .attr('id', (d: Node) => 'text' + d.id)
       .attr('x', (d: Node) => d.x as number)
@@ -179,16 +183,16 @@ export default {
   SET_SELECTED_DOT(state, payload) {
     state.selectedDot = payload;
   },
-  CHANGE_ON_CLICK_TO_TARGET_NODES(state) {
+  CHANGE_ON_CLICK_TO_TARGET_NODES(state, payload) {
     state.svg
       .select('g.nodes')
-      .selectAll('rect')
-      .on('click', onClickNodeAlternative(state));
+      .selectAll('.node')
+      .on('click', onClickNodeAlternative(state, payload));
   },
   CHANGE_ON_CLICK_TO_DEFAULT(state) {
     state.svg
       .select('g.nodes')
-      .selectAll('rect')
+      .selectAll('.node')
       .on('click', onClickNode(state));
   },
   SET_SELECTED_TARGET_NODE(state, payload) {
@@ -327,7 +331,7 @@ export default {
   REFRESH_SELECTION(state) {
     state.node = state.svg
       .select('g.nodes')
-      .selectAll('rect')
+      .selectAll('.node')
       .data(state.dataset.nodes)
       .enter();
   },
@@ -336,40 +340,25 @@ export default {
     state.aggregations = payload;
   },
 
-  DRAW_AGGREGATIONS(state) {
-    state.aggregationRects = state.svg
-      .select('g.aggregations')
-      .selectAll('rect')
-      .data(state.aggregations)
-      .enter()
-      .append('rect')
-      .style('fill', 'transparent')
-      .attr(
-        'id',
-        (d: { id: number; nodes: Array<number> }) => 'aggregation' + d.id
-      )
-      .attr('stroke', 'black')
-      .attr('stroke-width', 1)
-      .attr(
-        'x',
-        (d: { id: number; nodes: Array<number> }) =>
-          getAggregationRectCoords(d, state.dataset.nodes, NODE_SIZE).x
-      )
-      .attr(
-        'y',
-        (d: { id: number; nodes: Array<number> }) =>
-          getAggregationRectCoords(d, state.dataset.nodes, NODE_SIZE).y
-      )
-      .attr(
-        'width',
-        (d: { id: number; nodes: Array<number> }) =>
-          getAggregationRectSize(d, state.dataset.nodes, NODE_SIZE).w
-      )
-      .attr(
-        'height',
-        (d: { id: number; nodes: Array<number> }) =>
-          getAggregationRectSize(d, state.dataset.nodes, NODE_SIZE).h
-      );
+  DRAW_AGGREGATIONS(state, payload) {
+    state.svg.selectAll('.node').style('fill', 'transparent');
+    if (payload.length > 1) {
+      payload.slice(1).map((node) => {
+        state.svg.select('#node' + node).style('fill', 'green');
+      });
+    }
+    state.svg.selectAll('#node' + payload[0]).style('fill', 'red');
+
+    const aggregations = state.aggregations.filter((aggregation) =>
+      payload.every((e) => aggregation.includes(e))
+    );
+    const uniqueNodes = [...new Set(aggregations.flat())].filter(
+      (e) => !payload.includes(e)
+    );
+
+    uniqueNodes.map((node) => {
+      state.svg.select('#node' + node).style('fill', 'lightblue');
+    });
   },
 };
 

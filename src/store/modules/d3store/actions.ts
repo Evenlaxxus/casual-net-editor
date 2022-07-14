@@ -45,8 +45,8 @@ export default {
     commit('SET_SELECTED_TARGET_NODE', payload);
   },
 
-  changeOnClickToTargetNodes({ commit }) {
-    commit('CHANGE_ON_CLICK_TO_TARGET_NODES');
+  changeOnClickToTargetNodes({ commit }, payload) {
+    commit('CHANGE_ON_CLICK_TO_TARGET_NODES', payload);
   },
 
   changeOnClickToDefault({ commit }) {
@@ -104,13 +104,10 @@ export default {
   },
 
   setAggregations({ commit }, payload) {
-    commit(
-      'SET_AGGREGATIONS',
-      payload.map((e, index) => ({ id: index, nodes: e }))
-    );
+    commit('SET_AGGREGATIONS', payload);
   },
 
-  drawAggregations({ commit }) {
-    commit('DRAW_AGGREGATIONS');
+  drawAggregations({ commit }, payload) {
+    commit('DRAW_AGGREGATIONS', payload);
   },
 };

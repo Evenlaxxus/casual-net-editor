@@ -13,20 +13,23 @@
     <div class="menu__action-buttons">
       <LoadButton />
       <button class="base-button" @click="addNode">Add node</button>
-      <button class="base-button" :disabled="!selectedNode" @click="addLink">
+      <button class="base-button" :disabled="isDisabled" @click="addLink">
         Add link
       </button>
-      <button class="base-button" :disabled="!selectedNode" @click="addBinding">
+      <button class="base-button" :disabled="isDisabled" @click="addBinding">
         Add binding
       </button>
-      <button class="base-button" :disabled="!selectedNode" @click="deleteNode">
+      <button class="base-button" :disabled="isDisabled" @click="deleteNode">
         Delete node
       </button>
       <button
         class="base-button"
-        :disabled="!selectedNode"
-        @click="editNodeText"
+        :disabled="isDisabled"
+        @click="showAggregations"
       >
+        Show aggregations
+      </button>
+      <button class="base-button" :disabled="isDisabled" @click="editNodeText">
         Edit text
       </button>
       <button class="base-button" :disabled="!selectedLink" @click="deleteLink">
@@ -62,6 +65,9 @@ export default defineComponent({
       'selectedTargetNodes',
       'getNodeById',
     ]),
+    isDisabled() {
+      return !this.selectedNode && this.selectedNode !== 0;
+    },
   },
   data: () => ({
     isControlPanelVisible: false,
@@ -83,6 +89,7 @@ export default defineComponent({
       'changeOnClickToTargetNodes',
       'changeOnClickToDefault',
       'editNodeDescription',
+      'drawAggregations',
     ]),
     addNode() {
       this.isControlPanelVisible = true;
@@ -106,6 +113,12 @@ export default defineComponent({
       ).text;
       this.isControlPanelVisible = true;
       this.actionType = 'edit_node';
+    },
+    showAggregations() {
+      const draw = () =>
+        this.drawAggregations([this.selectedNode, ...this.selectedTargetNodes]);
+      draw();
+      this.changeOnClickToTargetNodes(draw);
     },
     deleteNode() {
       this.removeNode(this.selectedNode);
@@ -224,8 +237,9 @@ export default defineComponent({
 
   &__action-buttons,
   &__control-buttons {
-    gap: 0 10px;
+    gap: 10px 10px;
     display: flex;
+    flex-wrap: wrap;
   }
 
   &__apply {
