@@ -35,6 +35,32 @@ export function graphPlacement(
     dummyVerticesArray,
   } = addDummyVertices(layers, acyclicAdjacencyList);
 
+  const reversedAdjacencyListWithDummyVertices: Record<
+    number,
+    Array<number>
+  > = {};
+
+  Object.keys(adjacencyListWithDummyVertices)
+    .map((e) => parseInt(e))
+    .map((u) => {
+      adjacencyListWithDummyVertices[u].map((v) => {
+        if (reversedAdjacencyListWithDummyVertices[v]) {
+          reversedAdjacencyListWithDummyVertices[v] = [
+            ...reversedAdjacencyListWithDummyVertices[v],
+            u,
+          ];
+        } else {
+          reversedAdjacencyListWithDummyVertices[v] = [u];
+        }
+      });
+    });
+  Object.keys(adjacencyListWithDummyVertices)
+    .map((e) => parseInt(e))
+    .map((u) => {
+      if (!reversedAdjacencyListWithDummyVertices[u])
+        reversedAdjacencyListWithDummyVertices[u] = [];
+    });
+
   const sortedLayers = sortLayers(
     layersWithDummyVertices,
     adjacencyListWithDummyVertices
@@ -43,6 +69,7 @@ export function graphPlacement(
   const coordinates = assignCoordinates(
     sortedLayers,
     adjacencyListWithDummyVertices,
+    reversedAdjacencyListWithDummyVertices,
     dummyVerticesArray,
     pathsWithDummyVertices
   );

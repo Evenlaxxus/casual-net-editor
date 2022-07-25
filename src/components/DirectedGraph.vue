@@ -28,7 +28,7 @@ export default defineComponent({
     ]),
   },
   async created() {
-    await this.setDataset(graphPlacement(graph1, 5));
+    await this.setDataset(graphPlacement(graph2, 5));
     this.setAggregations([
       [0, 1],
       [0, 2],

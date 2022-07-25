@@ -29,6 +29,13 @@
       >
         Show aggregations
       </button>
+      <button
+        class="base-button"
+        :disabled="!selectedTargetNodes.length"
+        @click="aggregateNodes"
+      >
+        Show aggregations
+      </button>
       <button class="base-button" :disabled="isDisabled" @click="editNodeText">
         Edit text
       </button>
@@ -119,6 +126,9 @@ export default defineComponent({
         this.drawAggregations([this.selectedNode, ...this.selectedTargetNodes]);
       draw();
       this.changeOnClickToTargetNodes(draw);
+    },
+    aggregateNodes() {
+      console.log([this.selectedNode, ...this.selectedTargetNodes]);
     },
     deleteNode() {
       this.removeNode(this.selectedNode);
