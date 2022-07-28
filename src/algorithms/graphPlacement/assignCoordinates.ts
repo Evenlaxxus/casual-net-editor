@@ -1,6 +1,5 @@
 import { MARGIN_HORIZONTAL, MARGIN_VERTICAL, NODE_SIZE } from '@/utils/consts';
 import _ from 'lodash';
-import { max, min } from 'd3';
 export function assignCoordinates(
   layers: Array<Array<number>>,
   adjacencyList: Record<number, Array<number>>,
@@ -16,37 +15,14 @@ export function assignCoordinates(
     .map((e) => parseInt(e))
     .sort();
 
-  console.log(pathsWithDummyVertices);
-  const preprocessed = preprocessing(
+  const alignment = getCoordinates(
     layers,
-    adjacencyList,
-    reversedAdjacencyList
-  );
-  console.log('middle dupa', preprocessed);
-  const step2 = verticalAlignment(
-    layers,
-    preprocessed,
     vertexList,
-    reversedAdjacencyList
+    reversedAdjacencyList,
+    adjacencyList
   );
-  console.log(step2);
-  //
-  const step3 = horizontalCompaction(
-    vertexList,
-    step2.root,
-    step2.align,
-    layers
-  );
-  console.log('step3', step3);
-  // while (minimalIntersections < intersections || iterationCounter !== 0) {
-  //   coordinates = getNextCoordinates(coordinates);
-  //
-  //   Object.keys(coordinates)
-  //     .map((e) => parseInt(e))
-  //     .map((coord) => {});
-  //
-  //   iterationCounter -= 1;
-  // }
+  // console.log('step3', alignment);
+  // alignment.map((x, i) => (coordinates[i].x = x));
 
   return coordinates;
 }
@@ -72,7 +48,7 @@ function preprocessing(
           layers[i].some((e) => adjacencyList[e].includes(layers[i + 1][l1]))
         ) {
           //TODO fix
-          k1 = layers[i].indexOf(reversedAdjacencyList[layers[i + 1][l1]]);
+          k1 = layers[i].indexOf(reversedAdjacencyList[layers[i + 1][l1]][0]);
         }
         while (l <= l1) {
           reversedAdjacencyList[layers[i + 1][l]].map((item) => {
@@ -93,11 +69,10 @@ function verticalAlignment(
   layers: Array<Array<number>>,
   markedSegments: Array<Array<number>>,
   vertexList: Array<number>,
-  reversedAdjacencyList: Record<number, Array<number>>
-): { root: Array<number>; align: Array<number> } {
-  const root: Array<number> = _.cloneDeep(vertexList);
-  const align: Array<number> = _.cloneDeep(vertexList);
-
+  reversedAdjacencyList: Record<number, Array<number>>,
+  root: Array<number>,
+  align: Array<number>
+) {
   for (let i = 1; i < layers.length; i++) {
     let r = 0;
     for (let k = 1; k < layers[i].length; k++) {
@@ -127,19 +102,18 @@ function verticalAlignment(
       }
     }
   }
-  return { root: root, align: align };
 }
 
 function horizontalCompaction(
   vertexList: Array<number>,
   root: Array<number>,
   align: Array<number>,
-  layers: Array<Array<number>>
+  layers: Array<Array<number>>,
+  sink: Array<any>,
+  shift: Array<number>,
+  x: Array<any>
 ) {
-  const minSeparation = 10;
-  const sink: Array<any> = _.cloneDeep(vertexList);
-  const shift: Array<number> = vertexList.map((e) => Infinity);
-  const x: Array<any> = vertexList.map((e) => undefined);
+  const minSeparation = MARGIN_HORIZONTAL;
 
   const pos = (v: number) =>
     layers.find((layer) => layer.includes(v))?.indexOf(v) || 0;
@@ -156,7 +130,7 @@ function horizontalCompaction(
     if (x[v] == undefined) {
       x[v] = 0;
       let w = v;
-      while (w == v) {
+      do {
         if (pos(w) > 1) {
           const u = root[pred(w)];
           placeBlock(u);
@@ -167,9 +141,9 @@ function horizontalCompaction(
               x[v] - x[u] - minSeparation
             );
           } else x[v] = Math.max(x[v], x[u] + minSeparation);
-          w = align[w];
         }
-      }
+        w = align[w];
+      } while (w != v);
     }
   };
 
@@ -181,14 +155,55 @@ function horizontalCompaction(
     x[v] = x[root[v]];
     if (shift[sink[root[v]]] < Infinity) x[v] += shift[sink[root[v]]];
   });
-  return x;
 }
 
 function getCoordinates(
-  coordinates: Record<number, { x: number; y: number }>
-): Record<number, { x: number; y: number }> {
-  //TODO calculate coordinates
-  return coordinates;
+  layers: Array<Array<number>>,
+  vertexList: Array<number>,
+  reversedAdjacencyList: Record<number, Array<number>>,
+  adjacencyList: Record<number, Array<number>>
+) {
+  const preprocessed = preprocessing(
+    layers,
+    adjacencyList,
+    reversedAdjacencyList
+  );
+  const xCoordinates: Array<Array<any>> = [];
+  const root: Array<number> = _.cloneDeep(vertexList);
+  const align: Array<number> = _.cloneDeep(vertexList);
+  const sink: Array<any> = _.cloneDeep(vertexList);
+  const shift: Array<number> = vertexList.map((e) => Infinity);
+  const x: Array<any> = vertexList.map((e) => undefined);
+  for (const vertical in ['up', 'down']) {
+    for (const horizontal in ['left', 'right']) {
+      verticalAlignment(
+        layers,
+        preprocessed,
+        vertexList,
+        reversedAdjacencyList,
+        root,
+        align
+      );
+      horizontalCompaction(vertexList, root, align, layers, sink, shift, x);
+      const xMin = Math.abs(Math.min(...x.filter((e) => !isNaN(e))));
+      xCoordinates.push(x.map((e) => (e ? e + xMin : e)));
+    }
+  }
+  const result: Array<number> = [];
+  for (let i = 0; i < x.length; i++) {
+    const candidates = xCoordinates
+      .map((list) => list[i])
+      .filter((e) => !isNaN(e))
+      .sort((a, b) => a - b);
+    const k = candidates.length - 1;
+    result.push(
+      (candidates[Math.floor((k + 1) / 2)] +
+        candidates[Math.ceil((k + 1) / 2)]) /
+        2
+    );
+  }
+
+  return result;
 }
 
 function getInitialCoordinates(
