@@ -127,3 +127,25 @@ export function getAggregationRectSize(
     h: maxNode.y - minNode.y + nodeSize * 3,
   };
 }
+
+export function createAdjacencyList(
+  graph: Array<{
+    id: number;
+    name: string;
+    incoming: Array<Array<number>>;
+    outgoing: Array<Array<number>>;
+  }>
+): {
+  adjacencyList: Record<number, Array<number>>;
+  incomingAdjacencyList: Record<number, Array<number>>;
+} {
+  const adjacencyList = {};
+  const incomingAdjacencyList = {};
+  graph.map((node) => {
+    adjacencyList[node.id] = [...new Set(node.outgoing.flat())];
+  });
+  graph.map((node) => {
+    incomingAdjacencyList[node.id] = [...new Set(node.incoming.flat())];
+  });
+  return { adjacencyList, incomingAdjacencyList };
+}

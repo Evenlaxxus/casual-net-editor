@@ -7,7 +7,7 @@ import {
   removeCycles,
   restoreCycles,
 } from '@/algorithms/graphPlacement/removeCycles';
-import { permutations } from '@/utils/helpers';
+import { createAdjacencyList, permutations } from '@/utils/helpers';
 
 export function graphPlacement(
   graph: Array<{
@@ -82,28 +82,6 @@ export function graphPlacement(
   );
 
   return restoreCycles(dataset, adjacencyList);
-}
-
-function createAdjacencyList(
-  graph: Array<{
-    id: number;
-    name: string;
-    incoming: Array<Array<number>>;
-    outgoing: Array<Array<number>>;
-  }>
-): {
-  adjacencyList: Record<number, Array<number>>;
-  incomingAdjacencyList: Record<number, Array<number>>;
-} {
-  const adjacencyList = {};
-  const incomingAdjacencyList = {};
-  graph.map((node) => {
-    adjacencyList[node.id] = [...new Set(node.outgoing.flat())];
-  });
-  graph.map((node) => {
-    incomingAdjacencyList[node.id] = [...new Set(node.incoming.flat())];
-  });
-  return { adjacencyList, incomingAdjacencyList };
 }
 
 function mapToDataset(
