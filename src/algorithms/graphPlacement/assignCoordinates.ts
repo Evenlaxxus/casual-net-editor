@@ -19,10 +19,11 @@ export function assignCoordinates(
     layers,
     vertexList,
     reversedAdjacencyList,
-    adjacencyList
+    adjacencyList,
+    dummyVerticesArray
   );
   // console.log('step3', alignment);
-  // alignment.map((x, i) => (coordinates[i].x = x));
+  alignment.map((x, i) => (coordinates[i].x = x));
 
   return coordinates;
 }
@@ -30,25 +31,28 @@ export function assignCoordinates(
 function preprocessing(
   layers: Array<Array<number>>,
   adjacencyList: Record<number, Array<number>>,
-  reversedAdjacencyList: Record<number, Array<number>>
+  reversedAdjacencyList: Record<number, Array<number>>,
+  dummyVerticesArray: Array<number>
 ): Array<Array<number>> {
   const markedSegments: Array<Array<number>> = [];
-  for (let i = 2; i < layers.length - 2; i++) {
+  for (let i = 1; i < layers.length - 1; i++) {
     let k0 = 0;
     let l = 1;
-    for (let l1 = 1; l1 < layers[i + 1].length; l1++) {
-      if (
-        l1 === layers[i + 1].length ||
-        (adjacencyList[layers[i + 1][l1]].some((e) => layers[i].includes(e)) &&
-          layers[i].some((e) => adjacencyList[e].includes(layers[i + 1][l1])))
-      ) {
+    for (let l1 = 0; l1 < layers[i + 1].length; l1++) {
+      const v_i1_l1 = layers[i + 1][l1];
+      let isIncidentToInnerSegment = false;
+      if (dummyVerticesArray.includes(v_i1_l1)) {
+        const innerVertex = layers[i].find((e) =>
+          adjacencyList[v_i1_l1].includes(e)
+        );
+        if (innerVertex && dummyVerticesArray.includes(innerVertex)) {
+          isIncidentToInnerSegment = true;
+        }
+      }
+      if (l1 === layers[i + 1].length || isIncidentToInnerSegment) {
         let k1: number = layers[i].length;
-        if (
-          adjacencyList[layers[i + 1][l1]].some((e) => layers[i].includes(e)) &&
-          layers[i].some((e) => adjacencyList[e].includes(layers[i + 1][l1]))
-        ) {
-          //TODO fix
-          k1 = layers[i].indexOf(reversedAdjacencyList[layers[i + 1][l1]][0]);
+        if (isIncidentToInnerSegment) {
+          k1 = layers[i].indexOf(adjacencyList[v_i1_l1][0]);
         }
         while (l <= l1) {
           reversedAdjacencyList[layers[i + 1][l]].map((item) => {
@@ -73,23 +77,23 @@ function verticalAlignment(
   root: Array<number>,
   align: Array<number>
 ) {
-  for (let i = 1; i < layers.length; i++) {
+  for (let i = 0; i < layers.length; i++) {
     let r = 0;
-    for (let k = 1; k < layers[i].length; k++) {
+    for (let k = 0; k < layers[i].length; k++) {
       const vik = layers[i][k];
       if (reversedAdjacencyList[vik].length) {
         const upperNeighbours = reversedAdjacencyList[vik];
         for (
-          let m = Math.floor((upperNeighbours.length + 1) / 2);
-          m < Math.ceil((upperNeighbours.length + 1) / 2);
+          let m = Math.floor(upperNeighbours.length / 2);
+          m < Math.ceil(upperNeighbours.length / 2);
           m++
         ) {
           if (align[vik] === vik) {
-            const um = reversedAdjacencyList[vik][m];
+            const um = upperNeighbours[m];
             const umEdge = [um, vik];
-            const umPos = layers[i - 1].indexOf(um);
+            const umPos = layers[i + 1].indexOf(um);
             if (
-              markedSegments.some((a) => a.every((v, i) => v === umEdge[i])) &&
+              !markedSegments.some((a) => a.every((v, i) => v === umEdge[i])) &&
               r < umPos
             ) {
               align[um] = vik;
@@ -116,14 +120,14 @@ function horizontalCompaction(
   const minSeparation = MARGIN_HORIZONTAL;
 
   const pos = (v: number) =>
-    layers.find((layer) => layer.includes(v))?.indexOf(v) || 0;
+    layers.find((layer) => layer.includes(v))?.indexOf(v) || -1;
 
   const pred = (v: number) => {
     const layer = layers.find((layer) => layer.includes(v));
     if (layer) {
       return layer[pos(v) - 1];
     }
-    return 0;
+    return -1;
   };
 
   const placeBlock = (v: number) => {
@@ -131,7 +135,7 @@ function horizontalCompaction(
       x[v] = 0;
       let w = v;
       do {
-        if (pos(w) > 1) {
+        if (pos(w) > 0) {
           const u = root[pred(w)];
           placeBlock(u);
           if (sink[v] == v) sink[v] = sink[u];
@@ -161,19 +165,21 @@ function getCoordinates(
   layers: Array<Array<number>>,
   vertexList: Array<number>,
   reversedAdjacencyList: Record<number, Array<number>>,
-  adjacencyList: Record<number, Array<number>>
+  adjacencyList: Record<number, Array<number>>,
+  dummyVerticesArray: Array<number>
 ) {
   const preprocessed = preprocessing(
     layers,
     adjacencyList,
-    reversedAdjacencyList
+    reversedAdjacencyList,
+    dummyVerticesArray
   );
   const xCoordinates: Array<Array<any>> = [];
   const root: Array<number> = _.cloneDeep(vertexList);
   const align: Array<number> = _.cloneDeep(vertexList);
   const sink: Array<any> = _.cloneDeep(vertexList);
   const shift: Array<number> = vertexList.map((e) => Infinity);
-  const x: Array<any> = vertexList.map((e) => undefined);
+  const x: Array<number | undefined> = vertexList.map((e) => undefined);
   for (const vertical in ['up', 'down']) {
     for (const horizontal in ['left', 'right']) {
       verticalAlignment(
@@ -185,10 +191,20 @@ function getCoordinates(
         align
       );
       horizontalCompaction(vertexList, root, align, layers, sink, shift, x);
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       const xMin = Math.abs(Math.min(...x.filter((e) => !isNaN(e))));
       xCoordinates.push(x.map((e) => (e ? e + xMin : e)));
     }
   }
+  // const xMin = Math.abs(
+  //   Math.min(...xCoordinates.flat().filter((e) => !isNaN(e)))
+  // );
+  // xCoordinates = xCoordinates.map((xList) =>
+  //   xList.map((e) => (e ? e + xMin : e))
+  // );
+  // console.log(xCoordinates);
+
   const result: Array<number> = [];
   for (let i = 0; i < x.length; i++) {
     const candidates = xCoordinates
@@ -202,6 +218,7 @@ function getCoordinates(
         2
     );
   }
+  console.log(result);
 
   return result;
 }

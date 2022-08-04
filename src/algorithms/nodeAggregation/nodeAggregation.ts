@@ -25,5 +25,5 @@ export function getAllPossibleAggregations(
       );
     });
 
-  ahc(adjacencyObject);
+  return ahc(adjacencyObject);
 }

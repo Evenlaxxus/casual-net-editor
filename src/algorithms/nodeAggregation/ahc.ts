@@ -1,11 +1,10 @@
 import _ from 'lodash';
+import Graph from 'node-dijkstra';
 
 export function ahc(adjacencyObject: Record<number, Array<number>>) {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const Graph = require('node-dijkstra');
   const graph = new Graph();
   const vertexList = Object.keys(adjacencyObject).map((e) => parseInt(e));
-
+  const result: Array<Array<number>> = [];
   vertexList.map((v) => {
     graph.addNode(v.toString(), adjacencyObject[v]);
   });
@@ -28,9 +27,9 @@ export function ahc(adjacencyObject: Record<number, Array<number>>) {
     return linkage;
   };
 
-  let finalGroups = vertexList.map((e) => [e]);
+  let finalGroups: Array<Array<number>> = vertexList.map((e) => [e]);
   while (finalGroups.length > 1) {
-    const groups = _.cloneDeep(finalGroups);
+    const groups: Array<Array<number>> = _.cloneDeep(finalGroups);
     let minLinkage = getLinkage(groups[0], groups[1]);
     let candidates = [0, 1];
     groups.map((group1, index1) => {
@@ -49,6 +48,7 @@ export function ahc(adjacencyObject: Record<number, Array<number>>) {
       ...groups.filter((_, index) => !candidates.includes(index)),
       [...groups[candidates[0]], ...groups[candidates[1]]],
     ];
-    console.log(finalGroups);
+    result.push([...groups[candidates[0]], ...groups[candidates[1]]]);
   }
+  return result;
 }

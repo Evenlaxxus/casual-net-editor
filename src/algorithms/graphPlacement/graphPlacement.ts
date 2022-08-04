@@ -81,7 +81,10 @@ export function graphPlacement(
     dummyVertices
   );
 
-  return restoreCycles(dataset, adjacencyList);
+  return {
+    dataset: restoreCycles(dataset, adjacencyList),
+    adjacencyList: adjacencyList,
+  };
 }
 
 function mapToDataset(

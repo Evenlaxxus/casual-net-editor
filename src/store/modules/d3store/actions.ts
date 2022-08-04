@@ -5,8 +5,9 @@ export default {
     commit('SET_SVG', d3.select(selector));
   },
 
-  setDataset({ commit }, payload) {
-    commit('SET_DATASET', payload);
+  setDataset({ commit }, { dataset, adjacencyList }) {
+    commit('SET_DATASET', dataset);
+    commit('SET_ADJACENCY_LIST', adjacencyList);
   },
 
   initLink({ commit }) {
@@ -103,8 +104,12 @@ export default {
     commit('SET_DOT_LINKS');
   },
 
-  setAggregations({ commit }, payload) {
-    commit('SET_AGGREGATIONS', payload);
+  setPossibleAggregations({ commit }, payload) {
+    commit('SET_POSSIBLE_AGGREGATIONS', payload);
+  },
+
+  setActiveAggregations({ commit }, payload) {
+    commit('SET_ACTIVE_AGGREGATIONS', payload);
   },
 
   drawAggregations({ commit }, payload) {

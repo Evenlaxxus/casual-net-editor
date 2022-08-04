@@ -336,7 +336,7 @@ export default {
       .enter();
   },
 
-  SET_AGGREGATIONS(state, payload) {
+  SET_POSSIBLE_AGGREGATIONS(state, payload) {
     state.aggregations = payload;
   },
 
@@ -349,16 +349,32 @@ export default {
     }
     state.svg.selectAll('#node' + payload[0]).style('fill', 'red');
 
-    const aggregations = state.aggregations.filter((aggregation) =>
-      payload.every((e) => aggregation.includes(e))
+    const aggregations: Array<number> = state.aggregations.filter(
+      (aggregation) => payload.every((e) => aggregation.includes(e))
     );
-    const uniqueNodes = [...new Set(aggregations.flat())].filter(
+    const uniqueNodes: Array<number> = [...new Set(aggregations.flat())].filter(
       (e) => !payload.includes(e)
     );
 
-    uniqueNodes.map((node) => {
+    const nodesOneStepAhead: Array<number> = uniqueNodes.filter((e) =>
+      payload.some(
+        (key) =>
+          state.adjacencyList[key].includes(e) ||
+          state.adjacencyList[e].includes(key)
+      )
+    );
+
+    nodesOneStepAhead.map((node) => {
       state.svg.select('#node' + node).style('fill', 'lightblue');
     });
+  },
+
+  SET_ADJACENCY_LIST(state, payload) {
+    state.adjacencyList = payload;
+  },
+
+  SET_ACTIVE_AGGREGATIONS(state, { id, aggregated }) {
+    state.activeAggregations[id] = aggregated;
   },
 };
 

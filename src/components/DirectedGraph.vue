@@ -29,12 +29,7 @@ export default defineComponent({
   },
   async created() {
     await this.setDataset(graphPlacement(graph2, 5));
-    getAllPossibleAggregations(graph2);
-    this.setAggregations([
-      [0, 1],
-      [0, 2],
-      [0, 1, 3],
-    ]);
+    this.setPossibleAggregations(getAllPossibleAggregations(graph2));
   },
   mounted() {
     this.setSvg('svg');
@@ -50,7 +45,7 @@ export default defineComponent({
       'initNodeIdText',
       'initNodeText',
       'setDataset',
-      'setAggregations',
+      'setPossibleAggregations',
       'drawAggregations',
     ]),
     generateGraph() {

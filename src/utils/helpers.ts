@@ -149,3 +149,6 @@ export function createAdjacencyList(
   });
   return { adjacencyList, incomingAdjacencyList };
 }
+
+export const arraysEquals = (a, b) =>
+  a.length === b.length && a.every((v, i) => v === b[i]);
