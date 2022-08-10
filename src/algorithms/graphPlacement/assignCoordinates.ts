@@ -9,11 +9,9 @@ export function assignCoordinates(
 ): Record<number, { x: number; y: number }> {
   const coordinates = getInitialCoordinates(layers, dummyVerticesArray);
 
-  const iterationCounter = 1000;
-
   const vertexList: Array<number> = Object.keys(adjacencyList)
     .map((e) => parseInt(e))
-    .sort();
+    .sort((a, b) => a - b);
 
   const alignment = getCoordinates(
     layers,
@@ -22,7 +20,6 @@ export function assignCoordinates(
     adjacencyList,
     dummyVerticesArray
   );
-  // console.log('step3', alignment);
   alignment.map((x, i) => (coordinates[i].x = x));
 
   return coordinates;
@@ -74,50 +71,82 @@ function verticalAlignment(
   markedSegments: Array<Array<number>>,
   vertexList: Array<number>,
   reversedAdjacencyList: Record<number, Array<number>>,
-  root: Array<number>,
-  align: Array<number>
-) {
-  for (let i = 0; i < layers.length; i++) {
-    let r = 0;
-    for (let k = 0; k < layers[i].length; k++) {
-      const vik = layers[i][k];
-      if (reversedAdjacencyList[vik].length) {
-        const upperNeighbours = reversedAdjacencyList[vik];
-        for (
-          let m = Math.floor(upperNeighbours.length / 2);
-          m < Math.ceil(upperNeighbours.length / 2);
-          m++
-        ) {
-          if (align[vik] === vik) {
-            const um = upperNeighbours[m];
-            const umEdge = [um, vik];
-            const umPos = layers[i + 1].indexOf(um);
-            if (
-              !markedSegments.some((a) => a.every((v, i) => v === umEdge[i])) &&
-              r < umPos
-            ) {
-              align[um] = vik;
-              root[vik] = root[um];
-              align[vik] = root[vik];
-              r = umPos;
-            }
+  directions: Array<string>
+): { root: Array<number>; align: Array<number> } {
+  const root: Array<number> = _.cloneDeep(vertexList);
+  const align: Array<number> = _.cloneDeep(vertexList);
+
+  const innerFunction = (i: number, k: number, r: number): number => {
+    const vik = layers[i][k];
+    if (reversedAdjacencyList[vik].length) {
+      const upperNeighbours = reversedAdjacencyList[vik];
+      for (
+        let m = Math.floor((upperNeighbours.length - 1) / 2);
+        m <= Math.ceil((upperNeighbours.length - 1) / 2);
+        m++
+      ) {
+        if (align[vik] === vik) {
+          const um = upperNeighbours[m];
+          const umEdge = [um, vik];
+          const umPos = layers[i + 1].indexOf(um);
+          if (
+            !markedSegments.some((a) => a.every((v, i) => v === umEdge[i])) &&
+            r < umPos
+          ) {
+            align[um] = vik;
+            root[vik] = root[um];
+            align[vik] = root[vik];
+            r = umPos;
           }
         }
       }
     }
+    return r;
+  };
+
+  if (directions[0] === 'up' && directions[1] === 'left') {
+    for (let i = 0; i < layers.length; i++) {
+      let r = 0;
+      for (let k = 0; k < layers[i].length; k++) {
+        r = innerFunction(i, k, r);
+      }
+    }
+  } else if (directions[0] === 'up' && directions[1] === 'right') {
+    for (let i = 0; i < layers.length; i++) {
+      let r = 0;
+      for (let k = layers[i].length - 1; k >= 0; k--) {
+        r = innerFunction(i, k, r);
+      }
+    }
+  } else if (directions[0] === 'down' && directions[1] === 'left') {
+    for (let i = layers.length - 1; i >= 0; i--) {
+      let r = 0;
+      for (let k = 0; k < layers[i].length; k++) {
+        r = innerFunction(i, k, r);
+      }
+    }
+  } else {
+    for (let i = layers.length - 1; i >= 0; i--) {
+      let r = 0;
+      for (let k = layers[i].length - 1; k >= 0; k--) {
+        r = innerFunction(i, k, r);
+      }
+    }
   }
+
+  return { root, align };
 }
 
 function horizontalCompaction(
   vertexList: Array<number>,
   root: Array<number>,
   align: Array<number>,
-  layers: Array<Array<number>>,
-  sink: Array<any>,
-  shift: Array<number>,
-  x: Array<any>
-) {
+  layers: Array<Array<number>>
+): Array<any> {
   const minSeparation = MARGIN_HORIZONTAL;
+  const sink: Array<any> = _.cloneDeep(vertexList);
+  const shift: Array<number> = vertexList.map((e) => Infinity);
+  const x: Array<any> = vertexList.map((e) => undefined);
 
   const pos = (v: number) =>
     layers.find((layer) => layer.includes(v))?.indexOf(v) || -1;
@@ -159,6 +188,8 @@ function horizontalCompaction(
     x[v] = x[root[v]];
     if (shift[sink[root[v]]] < Infinity) x[v] += shift[sink[root[v]]];
   });
+
+  return x;
 }
 
 function getCoordinates(
@@ -174,39 +205,32 @@ function getCoordinates(
     reversedAdjacencyList,
     dummyVerticesArray
   );
-  const xCoordinates: Array<Array<any>> = [];
-  const root: Array<number> = _.cloneDeep(vertexList);
-  const align: Array<number> = _.cloneDeep(vertexList);
-  const sink: Array<any> = _.cloneDeep(vertexList);
-  const shift: Array<number> = vertexList.map((e) => Infinity);
-  const x: Array<number | undefined> = vertexList.map((e) => undefined);
-  for (const vertical in ['up', 'down']) {
-    for (const horizontal in ['left', 'right']) {
-      verticalAlignment(
+  let xCoordinates: Array<Array<any>> = [];
+  for (const vertical of ['up', 'down']) {
+    for (const horizontal of ['left', 'right']) {
+      const { root, align } = verticalAlignment(
         layers,
         preprocessed,
         vertexList,
         reversedAdjacencyList,
-        root,
-        align
+        [vertical, horizontal]
       );
-      horizontalCompaction(vertexList, root, align, layers, sink, shift, x);
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
-      const xMin = Math.abs(Math.min(...x.filter((e) => !isNaN(e))));
-      xCoordinates.push(x.map((e) => (e ? e + xMin : e)));
+      // const xMin = Math.abs(Math.min(...x.filter((e) => !isNaN(e))));
+      // xCoordinates.push(x.map((e) => (e ? e + xMin : e)));
+      xCoordinates.push(horizontalCompaction(vertexList, root, align, layers));
     }
   }
-  // const xMin = Math.abs(
-  //   Math.min(...xCoordinates.flat().filter((e) => !isNaN(e)))
-  // );
-  // xCoordinates = xCoordinates.map((xList) =>
-  //   xList.map((e) => (e ? e + xMin : e))
-  // );
-  // console.log(xCoordinates);
+  const xMin = Math.abs(
+    Math.min(...xCoordinates.flat().filter((e) => !isNaN(e)))
+  );
+  xCoordinates = xCoordinates.map((xList) =>
+    xList.map((e) => (e ? e + xMin : e))
+  );
 
   const result: Array<number> = [];
-  for (let i = 0; i < x.length; i++) {
+  for (let i = 0; i < vertexList.length; i++) {
     const candidates = xCoordinates
       .map((list) => list[i])
       .filter((e) => !isNaN(e))
@@ -218,9 +242,8 @@ function getCoordinates(
         2
     );
   }
-  console.log(result);
 
-  return result;
+  return result.map((e) => e + (NODE_SIZE + 10));
 }
 
 function getInitialCoordinates(
