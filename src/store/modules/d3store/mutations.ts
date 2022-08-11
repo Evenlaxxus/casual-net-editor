@@ -12,13 +12,7 @@ import {
   onClickNode,
   onClickNodeAlternative,
 } from '@/utils/eventCallbacks';
-import {
-  getAggregationRectCoords,
-  getAggregationRectSize,
-  getDotXPosition,
-  getDotYPosition,
-  setDotsArc,
-} from '@/utils/helpers';
+import { getDotXPosition, getDotYPosition, setDotsArc } from '@/utils/helpers';
 
 export default {
   SET_DATASET(state, payload) {

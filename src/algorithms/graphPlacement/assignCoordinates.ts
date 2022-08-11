@@ -40,7 +40,7 @@ function preprocessing(
       let isIncidentToInnerSegment = false;
       if (dummyVerticesArray.includes(v_i1_l1)) {
         const innerVertex = layers[i].find((e) =>
-          adjacencyList[v_i1_l1].includes(e)
+          reversedAdjacencyList[v_i1_l1].includes(e)
         );
         if (innerVertex && dummyVerticesArray.includes(innerVertex)) {
           isIncidentToInnerSegment = true;
@@ -142,11 +142,11 @@ function horizontalCompaction(
   root: Array<number>,
   align: Array<number>,
   layers: Array<Array<number>>
-): Array<any> {
+): Array<number> {
   const minSeparation = MARGIN_HORIZONTAL;
-  const sink: Array<any> = _.cloneDeep(vertexList);
-  const shift: Array<number> = vertexList.map((e) => Infinity);
-  const x: Array<any> = vertexList.map((e) => undefined);
+  const sink: Array<number> = _.cloneDeep(vertexList);
+  const shift: Array<number> = vertexList.map(() => Infinity);
+  const x: Array<any> = vertexList.map(() => undefined);
 
   const pos = (v: number) =>
     layers.find((layer) => layer.includes(v))?.indexOf(v) || -1;
@@ -205,7 +205,7 @@ function getCoordinates(
     reversedAdjacencyList,
     dummyVerticesArray
   );
-  let xCoordinates: Array<Array<any>> = [];
+  let xCoordinates: Array<Array<number>> = [];
   for (const vertical of ['up', 'down']) {
     for (const horizontal of ['left', 'right']) {
       const { root, align } = verticalAlignment(
@@ -215,10 +215,6 @@ function getCoordinates(
         reversedAdjacencyList,
         [vertical, horizontal]
       );
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      // const xMin = Math.abs(Math.min(...x.filter((e) => !isNaN(e))));
-      // xCoordinates.push(x.map((e) => (e ? e + xMin : e)));
       xCoordinates.push(horizontalCompaction(vertexList, root, align, layers));
     }
   }
@@ -266,14 +262,6 @@ function getInitialCoordinates(
     });
   });
   return initialCoordinates;
-}
-
-function mse(a, b) {
-  let error = 0;
-  for (let i = 0; i < a.length; i++) {
-    error += Math.pow(b[i] - a[i], 2);
-  }
-  return error / a.length;
 }
 
 // function numberOfEdgesIntersectedWithNodes(
