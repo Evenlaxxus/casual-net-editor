@@ -11,4 +11,6 @@ export default {
   selectedDot: (state) => state.selectedDot,
   selectedTargetNodes: (state) => state.selectedTargetNodes,
   getNodeById: (state) => (id) => state.svg.select(id),
+  aggregations: (state) => state.aggregations,
+  aggregationRects: (state) => state.aggregationRects,
 };

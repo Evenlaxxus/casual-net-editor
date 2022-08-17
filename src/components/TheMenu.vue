@@ -13,20 +13,30 @@
     <div class="menu__action-buttons">
       <LoadButton />
       <button class="base-button" @click="addNode">Add node</button>
-      <button class="base-button" :disabled="!selectedNode" @click="addLink">
+      <button class="base-button" :disabled="isDisabled" @click="addLink">
         Add link
       </button>
-      <button class="base-button" :disabled="!selectedNode" @click="addBinding">
+      <button class="base-button" :disabled="isDisabled" @click="addBinding">
         Add binding
       </button>
-      <button class="base-button" :disabled="!selectedNode" @click="deleteNode">
+      <button class="base-button" :disabled="isDisabled" @click="deleteNode">
         Delete node
       </button>
       <button
         class="base-button"
-        :disabled="!selectedNode"
-        @click="editNodeText"
+        :disabled="isDisabled"
+        @click="showAggregations"
       >
+        Show aggregations
+      </button>
+      <button
+        class="base-button"
+        :disabled="!selectedTargetNodes.length"
+        @click="aggregateNodes"
+      >
+        Aggregate
+      </button>
+      <button class="base-button" :disabled="isDisabled" @click="editNodeText">
         Edit text
       </button>
       <button class="base-button" :disabled="!selectedLink" @click="deleteLink">
@@ -47,6 +57,7 @@
 import { defineComponent } from 'vue';
 import LoadButton from '@/components/buttons/LoadButton.vue';
 import { mapActions, mapGetters } from 'vuex';
+import { graph2 } from '@/assets/testGraphDefinitions';
 
 export default defineComponent({
   name: 'TheMenu',
@@ -62,6 +73,9 @@ export default defineComponent({
       'selectedTargetNodes',
       'getNodeById',
     ]),
+    isDisabled() {
+      return !this.selectedNode && this.selectedNode !== 0;
+    },
   },
   data: () => ({
     isControlPanelVisible: false,
@@ -83,6 +97,8 @@ export default defineComponent({
       'changeOnClickToTargetNodes',
       'changeOnClickToDefault',
       'editNodeDescription',
+      'drawAggregations',
+      'setActiveAggregations',
     ]),
     addNode() {
       this.isControlPanelVisible = true;
@@ -106,6 +122,20 @@ export default defineComponent({
       ).text;
       this.isControlPanelVisible = true;
       this.actionType = 'edit_node';
+    },
+    showAggregations() {
+      const draw = () =>
+        this.drawAggregations([this.selectedNode, ...this.selectedTargetNodes]);
+      draw();
+      this.changeOnClickToTargetNodes(draw);
+    },
+    aggregateNodes() {
+      const selectedNodes = [this.selectedNode, ...this.selectedTargetNodes];
+      const id = Math.max(...this.dataset.nodes.map((e) => e.id)) + 1;
+      const aggregated = graph2.filter((e) => selectedNodes.includes(e.id));
+      this.setActiveAggregations({ id, aggregated });
+      // TODO pofiltrować tak aby incoming in outgoing zawierały nowy id zamiast id w selectedNodes i były unikalne
+      // const graph = graph2.filter(e => !selectedNodes.includes(e.id)).map(e => )
     },
     deleteNode() {
       this.removeNode(this.selectedNode);
@@ -224,8 +254,9 @@ export default defineComponent({
 
   &__action-buttons,
   &__control-buttons {
-    gap: 0 10px;
+    gap: 10px 10px;
     display: flex;
+    flex-wrap: wrap;
   }
 
   &__apply {

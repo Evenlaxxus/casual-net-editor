@@ -26,6 +26,7 @@ export default {
     state.svg.append('g').attr('class', 'node-id');
     state.svg.append('g').attr('class', 'dot-links');
     state.svg.append('g').attr('class', 'text');
+    state.svg.append('g').attr('class', 'aggregations');
 
     state.svg
       .append('defs')
@@ -104,6 +105,7 @@ export default {
       .style('cursor', 'pointer')
       .style('fill', 'transparent')
       .attr('id', (d: Node) => 'node' + d.id)
+      .attr('class', 'node')
       .attr('r', NODE_SIZE)
       .attr('stroke', 'black')
       .attr('stroke-width', 1)
@@ -142,7 +144,10 @@ export default {
       .style('text-anchor', 'middle')
       .style(
         'font-size',
-        (d) => Math.round((NODE_SIZE / 3) * (10 / d.text.length)) + 'px'
+        (d) =>
+          Math.round(
+            (NODE_SIZE / 3) * (10 / (d.text.length === 1 ? 5 : d.text.length))
+          ) + 'px'
       )
       .attr('id', (d: Node) => 'text' + d.id)
       .attr('x', (d: Node) => d.x as number)
@@ -172,16 +177,16 @@ export default {
   SET_SELECTED_DOT(state, payload) {
     state.selectedDot = payload;
   },
-  CHANGE_ON_CLICK_TO_TARGET_NODES(state) {
+  CHANGE_ON_CLICK_TO_TARGET_NODES(state, payload) {
     state.svg
       .select('g.nodes')
-      .selectAll('rect')
-      .on('click', onClickNodeAlternative(state));
+      .selectAll('.node')
+      .on('click', onClickNodeAlternative(state, payload));
   },
   CHANGE_ON_CLICK_TO_DEFAULT(state) {
     state.svg
       .select('g.nodes')
-      .selectAll('rect')
+      .selectAll('.node')
       .on('click', onClickNode(state));
   },
   SET_SELECTED_TARGET_NODE(state, payload) {
@@ -320,9 +325,50 @@ export default {
   REFRESH_SELECTION(state) {
     state.node = state.svg
       .select('g.nodes')
-      .selectAll('rect')
+      .selectAll('.node')
       .data(state.dataset.nodes)
       .enter();
+  },
+
+  SET_POSSIBLE_AGGREGATIONS(state, payload) {
+    state.aggregations = payload;
+  },
+
+  DRAW_AGGREGATIONS(state, payload) {
+    state.svg.selectAll('.node').style('fill', 'transparent');
+    if (payload.length > 1) {
+      payload.slice(1).map((node) => {
+        state.svg.select('#node' + node).style('fill', 'green');
+      });
+    }
+    state.svg.selectAll('#node' + payload[0]).style('fill', 'red');
+
+    const aggregations: Array<number> = state.aggregations.filter(
+      (aggregation) => payload.every((e) => aggregation.includes(e))
+    );
+    const uniqueNodes: Array<number> = [...new Set(aggregations.flat())].filter(
+      (e) => !payload.includes(e)
+    );
+
+    const nodesOneStepAhead: Array<number> = uniqueNodes.filter((e) =>
+      payload.some(
+        (key) =>
+          state.adjacencyList[key].includes(e) ||
+          state.adjacencyList[e].includes(key)
+      )
+    );
+
+    nodesOneStepAhead.map((node) => {
+      state.svg.select('#node' + node).style('fill', 'lightblue');
+    });
+  },
+
+  SET_ADJACENCY_LIST(state, payload) {
+    state.adjacencyList = payload;
+  },
+
+  SET_ACTIVE_AGGREGATIONS(state, { id, aggregated }) {
+    state.activeAggregations[id] = aggregated;
   },
 };
 
@@ -333,15 +379,6 @@ function calculateOffsetPosition(
   y2: number,
   offset: number
 ): [newX2: number, newY2: number] {
-  // const a = x1 - x2;
-  // const b = y1 - y2;
-  // const c = Math.hypot(a, b);
-  //
-  // const angleSine = a / c;
-  // const angleCosine = b / c;
-  //
-  // return [x2 + offset * angleSine, y2 + offset * angleCosine];
-
   const dx = x2 - x1;
   const dy = y2 - y1;
   const dist = Math.sqrt(dx * dx + dy * dy);

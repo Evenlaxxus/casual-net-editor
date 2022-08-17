@@ -5,8 +5,9 @@ export default {
     commit('SET_SVG', d3.select(selector));
   },
 
-  setDataset({ commit }, payload) {
-    commit('SET_DATASET', payload);
+  setDataset({ commit }, { dataset, adjacencyList }) {
+    commit('SET_DATASET', dataset);
+    commit('SET_ADJACENCY_LIST', adjacencyList);
   },
 
   initLink({ commit }) {
@@ -45,8 +46,8 @@ export default {
     commit('SET_SELECTED_TARGET_NODE', payload);
   },
 
-  changeOnClickToTargetNodes({ commit }) {
-    commit('CHANGE_ON_CLICK_TO_TARGET_NODES');
+  changeOnClickToTargetNodes({ commit }, payload) {
+    commit('CHANGE_ON_CLICK_TO_TARGET_NODES', payload);
   },
 
   changeOnClickToDefault({ commit }) {
@@ -101,5 +102,17 @@ export default {
     commit('REMOVE_BINDING', payload);
     commit('SET_DOT');
     commit('SET_DOT_LINKS');
+  },
+
+  setPossibleAggregations({ commit }, payload) {
+    commit('SET_POSSIBLE_AGGREGATIONS', payload);
+  },
+
+  setActiveAggregations({ commit }, payload) {
+    commit('SET_ACTIVE_AGGREGATIONS', payload);
+  },
+
+  drawAggregations({ commit }, payload) {
+    commit('DRAW_AGGREGATIONS', payload);
   },
 };

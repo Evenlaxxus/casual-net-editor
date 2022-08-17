@@ -86,3 +86,69 @@ export const permutations = (arr: Array<any>): Array<any> => {
     []
   );
 };
+
+export function getAggregationRectCoords(
+  d: {
+    id: number;
+    nodes: Array<number>;
+  },
+  nodes: Array<Node>,
+  nodeSize: number
+): { x: number; y: number } {
+  const includedNodes = nodes.filter((e) => d.nodes.includes(e.id));
+  const minNode = includedNodes.reduce(
+    (min, node) => (min.x >= node.x && min.y >= node.y ? node : min),
+    includedNodes[0]
+  );
+
+  return { x: minNode.x - nodeSize * 1.5, y: minNode.y - nodeSize * 1.5 };
+}
+
+export function getAggregationRectSize(
+  d: {
+    id: number;
+    nodes: Array<number>;
+  },
+  nodes: Array<Node>,
+  nodeSize: number
+): { w: number; h: number } {
+  const includedNodes = nodes.filter((e) => d.nodes.includes(e.id));
+  const minNode = includedNodes.reduce(
+    (min, node) => (min.x >= node.x && min.y >= node.y ? node : min),
+    includedNodes[0]
+  );
+  const maxNode = includedNodes.reduce(
+    (max, node) => (max.x <= node.x && max.y <= node.y ? node : max),
+    includedNodes[0]
+  );
+
+  return {
+    w: maxNode.x - minNode.x + nodeSize * 3,
+    h: maxNode.y - minNode.y + nodeSize * 3,
+  };
+}
+
+export function createAdjacencyList(
+  graph: Array<{
+    id: number;
+    name: string;
+    incoming: Array<Array<number>>;
+    outgoing: Array<Array<number>>;
+  }>
+): {
+  adjacencyList: Record<number, Array<number>>;
+  incomingAdjacencyList: Record<number, Array<number>>;
+} {
+  const adjacencyList = {};
+  const incomingAdjacencyList = {};
+  graph.map((node) => {
+    adjacencyList[node.id] = [...new Set(node.outgoing.flat())];
+  });
+  graph.map((node) => {
+    incomingAdjacencyList[node.id] = [...new Set(node.incoming.flat())];
+  });
+  return { adjacencyList, incomingAdjacencyList };
+}
+
+export const arraysEquals = (a, b) =>
+  a.length === b.length && a.every((v, i) => v === b[i]);

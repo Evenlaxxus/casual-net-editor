@@ -53,7 +53,8 @@ export function onClickDot(state: State) {
   };
 }
 
-export function onClickNodeAlternative(state: State) {
+// eslint-disable-next-line @typescript-eslint/ban-types
+export function onClickNodeAlternative(state: State, callback?: Function) {
   return function (this: any, e: PointerEvent, d: Node) {
     if (state.selectedTargetNodes.includes(d.id)) {
       d3.select(this).style('fill', 'lightblue');
@@ -63,6 +64,10 @@ export function onClickNodeAlternative(state: State) {
     } else {
       d3.select(this).style('fill', 'green');
       state.selectedTargetNodes.push(d.id);
+    }
+
+    if (callback) {
+      callback();
     }
   };
 }
