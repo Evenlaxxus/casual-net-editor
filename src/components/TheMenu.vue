@@ -51,6 +51,11 @@
       </button>
     </div>
   </div>
+  <div
+    class="circle-placeholder"
+    v-if="isCirclePlaceholderVisible"
+    ref="draggableContainer"
+  ></div>
 </template>
 
 <script lang="ts">
@@ -79,6 +84,7 @@ export default defineComponent({
   },
   data: () => ({
     isControlPanelVisible: false,
+    isCirclePlaceholderVisible: false,
     actionType: '',
     nodeText: '',
   }),
@@ -167,14 +173,30 @@ export default defineComponent({
     apply() {
       if (this.actionType === 'add_node') {
         if (this.nodeText) {
-          const nextId = Math.max(...this.dataset.nodes.map((e) => e.id)) + 1;
-          this.insertNode({
-            id: nextId,
-            x: Math.random() * 600,
-            y: Math.random() * 600,
-            text: this.nodeText,
-          });
-          this.openToast('New node added.', 'success', 5000, true);
+          this.isCirclePlaceholderVisible = true;
+          const mousemove = (e) => {
+            (this.$refs.draggableContainer as any).style.left =
+              e.clientX - 20 + 'px';
+            (this.$refs.draggableContainer as any).style.top =
+              e.clientY - 20 + 'px';
+          };
+
+          const onClick = (event) => {
+            const nextId = Math.max(...this.dataset.nodes.map((e) => e.id)) + 1;
+            this.insertNode({
+              id: nextId,
+              x: event.x,
+              y: event.y,
+              text: this.nodeText,
+            });
+            this.openToast('New node added.', 'success', 5000, true);
+            window.removeEventListener('mouseup', onClick);
+            window.removeEventListener('mousemove', mousemove);
+            this.isCirclePlaceholderVisible = false;
+          };
+          window.addEventListener('mouseup', onClick);
+          window.addEventListener('mousemove', mousemove);
+          this.openToast('Place node.', 'info', 5000, true);
         } else {
           this.openToast('Define node text.', 'success', 5000, true);
         }
@@ -266,5 +288,13 @@ export default defineComponent({
   &__cancel {
     background-color: #c62828;
   }
+}
+
+.circle-placeholder {
+  position: fixed;
+  width: 40px;
+  height: 40px;
+  border: 1px solid black;
+  border-radius: 50%;
 }
 </style>
