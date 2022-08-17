@@ -15,6 +15,8 @@
 import { defineComponent } from 'vue';
 import { mapGetters, mapActions } from 'vuex';
 import { HTMLInputEvent } from '@/utils/types';
+import { getAllPossibleAggregations } from '@/algorithms/nodeAggregation/nodeAggregation';
+import { graphPlacement } from '@/algorithms/graphPlacement/graphPlacement';
 
 export default defineComponent({
   name: 'LoadButton',
@@ -22,7 +24,18 @@ export default defineComponent({
     ...mapGetters(['graphFile']),
   },
   methods: {
-    ...mapActions(['setGraphFile']),
+    ...mapActions([
+      'setSvg',
+      'initLink',
+      'initNode',
+      'initDots',
+      'initDotLinks',
+      'initNodeIdText',
+      'initNodeText',
+      'setDataset',
+      'setPossibleAggregations',
+      'drawAggregations',
+    ]),
     onFileChange(e: HTMLInputEvent) {
       let files = e?.target?.files || e?.dataTransfer?.files;
       if (!files?.length) return;
@@ -30,10 +43,26 @@ export default defineComponent({
     },
     readFile(file: Blob) {
       let reader = new FileReader();
-      reader.onload = (e: ProgressEvent<FileReader>) => {
-        this.setGraphFile(JSON.parse(e?.target?.result as string));
+      reader.onload = async (e: ProgressEvent<FileReader>) => {
+        const model = JSON.parse(e?.target?.result as string);
+        console.log(model);
+        await this.setDataset(graphPlacement(model, 5));
+        this.setPossibleAggregations(getAllPossibleAggregations(model));
+        this.setSvg('svg');
+        this.generateGraph();
       };
       reader.readAsText(file);
+    },
+    generateGraph() {
+      this.initLink();
+
+      this.initNode();
+
+      this.initNodeText();
+
+      this.initDots();
+
+      this.initDotLinks();
     },
   },
 });

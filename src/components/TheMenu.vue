@@ -2,7 +2,11 @@
   <div class="menu">
     <div class="menu__control-buttons" v-if="isControlPanelVisible">
       <input
-        v-if="actionType === 'add_node' || actionType === 'edit_node'"
+        v-if="
+          actionType === 'add_node' ||
+          actionType === 'edit_node' ||
+          actionType === 'save_model'
+        "
         type="text"
         v-model="nodeText"
         @input="(event) => (nodeText = event.target.value)"
@@ -12,6 +16,8 @@
     </div>
     <div class="menu__action-buttons">
       <LoadButton />
+      <a class="downloader" ref="downloader"></a>
+      <button class="base-button" @click="saveFile">Save model</button>
       <button class="base-button" @click="addNode">Add node</button>
       <button class="base-button" :disabled="isDisabled" @click="addLink">
         Add link
@@ -63,6 +69,7 @@ import { defineComponent } from 'vue';
 import LoadButton from '@/components/buttons/LoadButton.vue';
 import { mapActions, mapGetters } from 'vuex';
 import { graph2 } from '@/assets/testGraphDefinitions';
+import { createModelJson } from '@/utils/helpers';
 
 export default defineComponent({
   name: 'TheMenu',
@@ -87,6 +94,7 @@ export default defineComponent({
     isCirclePlaceholderVisible: false,
     actionType: '',
     nodeText: '',
+    file: undefined,
   }),
   methods: {
     ...mapActions([
@@ -106,6 +114,14 @@ export default defineComponent({
       'drawAggregations',
       'setActiveAggregations',
     ]),
+    saveFile() {
+      const data = JSON.stringify(createModelJson(this.dataset));
+      const blob = new Blob([data], { type: 'text/plain' });
+      (this.$refs.downloader as any).href = window.URL.createObjectURL(blob);
+
+      this.isControlPanelVisible = true;
+      this.actionType = 'save_model';
+    },
     addNode() {
       this.isControlPanelVisible = true;
       this.actionType = 'add_node';
@@ -240,6 +256,13 @@ export default defineComponent({
         });
         this.openToast('Node text updated.', 'success', 5000, true);
       }
+      if (this.actionType === 'save_model') {
+        if (this.nodeText) {
+          console.log(this.$refs.downloader);
+          (this.$refs.downloader as any).download = this.nodeText + '.json';
+          (this.$refs.downloader as any).click();
+        }
+      }
       this.clearAll();
     },
     openToast(
@@ -296,5 +319,9 @@ export default defineComponent({
   height: 40px;
   border: 1px solid black;
   border-radius: 50%;
+}
+
+.downloader {
+  display: none;
 }
 </style>

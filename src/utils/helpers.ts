@@ -1,5 +1,6 @@
-import { Dot, Link, Node } from '@/utils/types';
+import { Dataset, Dot, Link, Node } from '@/utils/types';
 import * as d3 from 'd3';
+import _ from 'lodash';
 
 export function setDotsArc(d: Link, dot: any, node: any, baseRadius: number) {
   const sourceDot = dot._groups[0].find((e: any) => e.__data__.id === d.source);
@@ -152,3 +153,44 @@ export function createAdjacencyList(
 
 export const arraysEquals = (a, b) =>
   a.length === b.length && a.every((v, i) => v === b[i]);
+
+export const createModelJson = (
+  dataset: Dataset
+): Array<{
+  id: number;
+  name: string;
+  incoming: Array<Array<number>>;
+  outgoing: Array<Array<number>>;
+}> => {
+  const model = dataset.nodes.map((node) => {
+    const dots = dataset.dots.filter((dot) => dot.source === node.id);
+    const links = dataset.links.filter((link) => link.source === node.id);
+    const groups = _.groupBy(dots, 'row');
+    const incoming: Array<Array<number>> = [];
+    const outgoing: Array<Array<number>> = [];
+    console.log(dataset);
+    Object.keys(groups)
+      .map((e) => parseInt(e))
+      .map((key) => {
+        const group = groups[key];
+        if (
+          links.find(
+            (link) =>
+              link.source === group[0].source && link.target === group[0].target
+          )
+        ) {
+          outgoing.push(group.map((dot) => dot.target));
+        } else {
+          incoming.push(group.map((dot) => dot.target));
+        }
+      });
+    return {
+      id: node.id,
+      name: node.text,
+      incoming: incoming,
+      outgoing: outgoing,
+    };
+  });
+
+  return model;
+};
