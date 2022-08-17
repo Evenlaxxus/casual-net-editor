@@ -6,30 +6,53 @@ export function removeCycles(
   incomingAdjacencyList: Record<number, Array<number>>
 ): Record<number, Array<number>> {
   const acyclic: Record<number, Array<number>> = {};
-  const incoming: Record<number, Array<number>> = _.cloneDeep(adjacencyList);
-  const outgoing: Record<number, Array<number>> = _.cloneDeep(
+  Object.keys(adjacencyList)
+    .map((e) => parseInt(e))
+    .map((e) => (acyclic[e] = []));
+
+  let incoming: Record<number, Array<number>> = _.cloneDeep(
     incomingAdjacencyList
   );
+  let outgoing: Record<number, Array<number>> = _.cloneDeep(adjacencyList);
+
   Object.keys(adjacencyList)
     .map((e) => parseInt(e))
-    .sort((a, b) => adjacencyList[a].length - adjacencyList[b].length)
+    .sort(
+      (a, b) => adjacencyList[b].flat().length - adjacencyList[a].flat().length
+    )
     .map((vertex) => {
-      if (incoming[vertex].length >= outgoing[vertex].length) {
-        acyclic[vertex] = incoming[vertex];
+      if (outgoing[vertex].length >= incoming[vertex].length) {
+        acyclic[vertex] = [...acyclic[vertex], ...outgoing[vertex]];
       } else {
-        acyclic[vertex] = outgoing[vertex];
-      }
-      Object.keys(adjacencyList)
-        .map((e) => parseInt(e))
-        .sort((a, b) => adjacencyList[a].length - adjacencyList[b].length)
-        .map((e) => {
-          incoming[e] = incoming[e].filter((v) => v !== vertex);
-          outgoing[e] = outgoing[e].filter((v) => v !== vertex);
+        incoming[vertex].map((childVertex) => {
+          acyclic[childVertex] = [...acyclic[childVertex], vertex];
         });
+      }
+
+      const incomingUpdated = _.cloneDeep(incoming);
+      const outgoingUpdated = _.cloneDeep(outgoing);
+
+      incomingUpdated[vertex] = [];
+      outgoingUpdated[vertex] = [];
+
+      outgoing[vertex].map((childVertex) => {
+        incomingUpdated[childVertex] = incoming[childVertex].filter(
+          (v) => v !== vertex
+        );
+      });
+
+      incoming[vertex].map((childVertex) => {
+        outgoingUpdated[childVertex] = outgoing[childVertex].filter(
+          (v) => v !== vertex
+        );
+      });
+
+      incoming = _.cloneDeep(incomingUpdated);
+      outgoing = _.cloneDeep(outgoingUpdated);
     });
+
   Object.keys(adjacencyList)
     .map((e) => parseInt(e))
-    .sort((a, b) => adjacencyList[a].length - adjacencyList[b].length)
     .map((vertex) => {
       adjacencyList[vertex].map((childVertex) => {
         if (

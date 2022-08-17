@@ -29,6 +29,13 @@
       >
         Show aggregations
       </button>
+      <button
+        class="base-button"
+        :disabled="!selectedTargetNodes.length"
+        @click="aggregateNodes"
+      >
+        Aggregate
+      </button>
       <button class="base-button" :disabled="isDisabled" @click="editNodeText">
         Edit text
       </button>
@@ -50,6 +57,7 @@
 import { defineComponent } from 'vue';
 import LoadButton from '@/components/buttons/LoadButton.vue';
 import { mapActions, mapGetters } from 'vuex';
+import { graph2 } from '@/assets/testGraphDefinitions';
 
 export default defineComponent({
   name: 'TheMenu',
@@ -90,6 +98,7 @@ export default defineComponent({
       'changeOnClickToDefault',
       'editNodeDescription',
       'drawAggregations',
+      'setActiveAggregations',
     ]),
     addNode() {
       this.isControlPanelVisible = true;
@@ -119,6 +128,14 @@ export default defineComponent({
         this.drawAggregations([this.selectedNode, ...this.selectedTargetNodes]);
       draw();
       this.changeOnClickToTargetNodes(draw);
+    },
+    aggregateNodes() {
+      const selectedNodes = [this.selectedNode, ...this.selectedTargetNodes];
+      const id = Math.max(...this.dataset.nodes.map((e) => e.id)) + 1;
+      const aggregated = graph2.filter((e) => selectedNodes.includes(e.id));
+      this.setActiveAggregations({ id, aggregated });
+      // TODO pofiltrować tak aby incoming in outgoing zawierały nowy id zamiast id w selectedNodes i były unikalne
+      // const graph = graph2.filter(e => !selectedNodes.includes(e.id)).map(e => )
     },
     deleteNode() {
       this.removeNode(this.selectedNode);

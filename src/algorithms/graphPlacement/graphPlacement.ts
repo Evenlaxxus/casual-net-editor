@@ -7,7 +7,7 @@ import {
   removeCycles,
   restoreCycles,
 } from '@/algorithms/graphPlacement/removeCycles';
-import { permutations } from '@/utils/helpers';
+import { createAdjacencyList, permutations } from '@/utils/helpers';
 
 export function graphPlacement(
   graph: Array<{
@@ -35,6 +35,32 @@ export function graphPlacement(
     dummyVerticesArray,
   } = addDummyVertices(layers, acyclicAdjacencyList);
 
+  const reversedAdjacencyListWithDummyVertices: Record<
+    number,
+    Array<number>
+  > = {};
+
+  Object.keys(adjacencyListWithDummyVertices)
+    .map((e) => parseInt(e))
+    .map((u) => {
+      adjacencyListWithDummyVertices[u].map((v) => {
+        if (reversedAdjacencyListWithDummyVertices[v]) {
+          reversedAdjacencyListWithDummyVertices[v] = [
+            ...reversedAdjacencyListWithDummyVertices[v],
+            u,
+          ];
+        } else {
+          reversedAdjacencyListWithDummyVertices[v] = [u];
+        }
+      });
+    });
+  Object.keys(adjacencyListWithDummyVertices)
+    .map((e) => parseInt(e))
+    .map((u) => {
+      if (!reversedAdjacencyListWithDummyVertices[u])
+        reversedAdjacencyListWithDummyVertices[u] = [];
+    });
+
   const sortedLayers = sortLayers(
     layersWithDummyVertices,
     adjacencyListWithDummyVertices
@@ -43,6 +69,7 @@ export function graphPlacement(
   const coordinates = assignCoordinates(
     sortedLayers,
     adjacencyListWithDummyVertices,
+    reversedAdjacencyListWithDummyVertices,
     dummyVerticesArray,
     pathsWithDummyVertices
   );
@@ -54,29 +81,10 @@ export function graphPlacement(
     dummyVertices
   );
 
-  return restoreCycles(dataset, adjacencyList);
-}
-
-function createAdjacencyList(
-  graph: Array<{
-    id: number;
-    name: string;
-    incoming: Array<Array<number>>;
-    outgoing: Array<Array<number>>;
-  }>
-): {
-  adjacencyList: Record<number, Array<number>>;
-  incomingAdjacencyList: Record<number, Array<number>>;
-} {
-  const adjacencyList = {};
-  const incomingAdjacencyList = {};
-  graph.map((node) => {
-    adjacencyList[node.id] = [...new Set(node.outgoing.flat())];
-  });
-  graph.map((node) => {
-    incomingAdjacencyList[node.id] = [...new Set(node.incoming.flat())];
-  });
-  return { adjacencyList, incomingAdjacencyList };
+  return {
+    dataset: restoreCycles(dataset, adjacencyList),
+    adjacencyList: adjacencyList,
+  };
 }
 
 function mapToDataset(

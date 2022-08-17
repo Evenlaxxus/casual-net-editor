@@ -77,10 +77,10 @@ function transitiveReduction(
 function topologicalSort(
   graph: Record<number, Array<number>>
 ): Record<number, number> {
-  const vertices = Object.keys(graph);
-  const visited = {};
-  const order = {};
-  let i = vertices.length - 1;
+  const vertices: Array<number> = Object.keys(graph).map((e) => parseInt(e));
+  const visited: Record<number, boolean> = {};
+  const order: Record<number, number> = {};
+  let i: number = vertices.length - 1;
   vertices.map((v) => {
     if (!visited[v]) {
       i = dfsSort(v, i, visited, order, graph);
@@ -91,7 +91,7 @@ function topologicalSort(
 
 function dfsSort(v, i, visited, order, graph): number {
   visited[v] = true;
-  const neighbors = graph[v];
+  const neighbors: Array<number> = graph[v];
   neighbors.map((neighbor) => {
     if (!visited[neighbor]) {
       i = dfsSort(neighbor, i, visited, order, graph);
@@ -110,18 +110,16 @@ function assignLayers(
   const used: Array<number> = [];
   const numberOfVertices = Object.keys(sortedGraph).length;
 
-  while (used.length < numberOfVertices) {
+  while (used.length !== numberOfVertices) {
     const u: number = Object.keys(sortedGraph)
       .map((e) => parseInt(e))
-      .reduce((max, val) =>
-        !used.includes(val) && sortedGraph[max] > sortedGraph[val] ? max : val
-      );
+      .filter((e) => !used.includes(e))
+      .filter((e) => adjacencyList[e].every((v) => used.includes(v)))
+      .reduce((max, val) => (sortedGraph[max] > sortedGraph[val] ? max : val));
     if (
       layers[layers.length - 1].length < W &&
       adjacencyList[u].every((node) =>
-        [...layers]
-          .splice(0, layers.length - 1)
-          .some((layer) => layer.includes(node))
+        layers.slice(0, layers.length - 1).some((layer) => layer.includes(node))
       )
     ) {
       layers[layers.length - 1].push(u);
@@ -129,7 +127,6 @@ function assignLayers(
       layers.push([u]);
     }
     used.push(u);
-    delete sortedGraph[u];
   }
   return layers;
 }

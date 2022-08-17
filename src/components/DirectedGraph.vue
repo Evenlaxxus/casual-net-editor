@@ -8,7 +8,7 @@ import { mapActions, mapGetters } from 'vuex';
 import { HEIGHT, WIDTH } from '@/utils/consts';
 import { graphPlacement } from '@/algorithms/graphPlacement/graphPlacement';
 import { graph1, graph2, graph3 } from '@/assets/testGraphDefinitions';
-import { getAllPossibleAggregations } from '@/algorithms/graphPlacement/nodeAggregation';
+import { getAllPossibleAggregations } from '@/algorithms/nodeAggregation/nodeAggregation';
 
 export default defineComponent({
   name: 'DirectedGraph',
@@ -28,12 +28,8 @@ export default defineComponent({
     ]),
   },
   async created() {
-    await this.setDataset(graphPlacement(graph1, 5));
-    this.setAggregations([
-      [0, 1],
-      [0, 2],
-      [0, 1, 3],
-    ]);
+    await this.setDataset(graphPlacement(graph2, 5));
+    this.setPossibleAggregations(getAllPossibleAggregations(graph2));
   },
   mounted() {
     this.setSvg('svg');
@@ -49,7 +45,7 @@ export default defineComponent({
       'initNodeIdText',
       'initNodeText',
       'setDataset',
-      'setAggregations',
+      'setPossibleAggregations',
       'drawAggregations',
     ]),
     generateGraph() {
