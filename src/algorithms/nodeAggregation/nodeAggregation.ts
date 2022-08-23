@@ -8,7 +8,7 @@ export function getAllPossibleAggregations(
     incoming: Array<Array<number>>;
     outgoing: Array<Array<number>>;
   }>
-) {
+): Array<Array<number>> {
   const { adjacencyList, incomingAdjacencyList } = createAdjacencyList(graph);
   const adjacencyObject = {};
   Object.keys(adjacencyList)

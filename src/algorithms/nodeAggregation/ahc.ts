@@ -1,7 +1,9 @@
 import _ from 'lodash';
 import Graph from 'node-dijkstra';
 
-export function ahc(adjacencyObject: Record<number, Array<number>>) {
+export function ahc(
+  adjacencyObject: Record<number, Array<number>>
+): Array<Array<number>> {
   const graph = new Graph();
   const vertexList = Object.keys(adjacencyObject).map((e) => parseInt(e));
   const result: Array<Array<number>> = [];
