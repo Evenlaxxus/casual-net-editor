@@ -57,26 +57,27 @@ export default defineComponent({
       await this.setDataset(graphPlacement(parallel, W));
       this.setSvg('svg');
       this.generateGraph();
-      console.log(
-        testAggregations(
-          getAllPossibleAggregations(graph2),
-          correctAggregations['graph2']
-        )
+      const test2Result = testAggregations(
+        getAllPossibleAggregations(parallel),
+        correctAggregations['parallel']
       );
-      // const testResult = test(this.dataset, this.svg);
-      // console.log(
-      //   `${W}; ${testResult.edgeCrossings}; ${
-      //     testResult.graphSize
-      //   }; ${testResult.totalEdgeLength
-      //     .toString()
-      //     .replace('.', ',')}; ${testResult.maxEdgeLength
-      //     .toString()
-      //     .replace('.', ',')}; ${testResult.proportions
-      //     .toString()
-      //     .replace('.', ',')}; ${testResult.numberOfBends}; ${
-      //     testResult.maxNumberOfBends
-      //   }`
-      // );
+      console.log(
+        `${test2Result.maxVertex};${test2Result.correct};${test2Result.missing};${test2Result.errors}`
+      );
+      const testResult = test(this.dataset, this.svg);
+      console.log(
+        `${W}; ${testResult.edgeCrossings}; ${
+          testResult.graphSize
+        }; ${testResult.totalEdgeLength
+          .toString()
+          .replace('.', ',')}; ${testResult.maxEdgeLength
+          .toString()
+          .replace('.', ',')}; ${testResult.proportions
+          .toString()
+          .replace('.', ',')}; ${testResult.numberOfBends}; ${
+          testResult.maxNumberOfBends
+        }`
+      );
     },
 
     generateGraph() {
