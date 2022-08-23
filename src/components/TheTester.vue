@@ -53,7 +53,7 @@ export default defineComponent({
 
     async launchTests() {
       const W = 5;
-      await this.setDataset(graphPlacement(graph1, W));
+      await this.setDataset(graphPlacement(graph2, W));
       this.setSvg('svg');
       this.generateGraph();
       console.log(getAllPossibleAggregations(graph2));
