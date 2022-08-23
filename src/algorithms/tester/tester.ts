@@ -179,6 +179,35 @@ function getMaxNumberOfBends(dataset: Dataset): number {
   );
 }
 
-// export function testAggregations() {
-//
-// }
+export function testAggregations(
+  calculated: Array<Array<number>>,
+  prepared: Array<Array<number>>
+): {
+  maxVertex: number;
+  errors: number;
+  correct: number;
+  missing: number;
+} {
+  const maxVertex: number = calculated.reduce(
+    (max, e) => (e.length > max ? e.length : max),
+    0
+  );
+
+  const errors: number = calculated.filter(
+    (calcArr) =>
+      !prepared.find((e) => calcArr.every((item) => e.includes(item)))
+  ).length;
+
+  const correct: number = calculated.filter((calcArr) =>
+    prepared.find((e) => calcArr.every((item) => e.includes(item)))
+  ).length;
+
+  const missing: number = prepared.length - correct;
+
+  return {
+    maxVertex,
+    errors,
+    correct,
+    missing,
+  };
+}

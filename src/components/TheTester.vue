@@ -18,8 +18,9 @@ import {
   ORgraph,
   XORgraph,
   parallel,
+  correctAggregations,
 } from '@/assets/testGraphDefinitions';
-import { test } from '@/algorithms/tester/tester';
+import { test, testAggregations } from '@/algorithms/tester/tester';
 import { getAllPossibleAggregations } from '@/algorithms/nodeAggregation/nodeAggregation';
 
 export default defineComponent({
@@ -53,10 +54,15 @@ export default defineComponent({
 
     async launchTests() {
       const W = 5;
-      await this.setDataset(graphPlacement(graph2, W));
+      await this.setDataset(graphPlacement(parallel, W));
       this.setSvg('svg');
       this.generateGraph();
-      console.log(getAllPossibleAggregations(graph2));
+      console.log(
+        testAggregations(
+          getAllPossibleAggregations(graph2),
+          correctAggregations['graph2']
+        )
+      );
       // const testResult = test(this.dataset, this.svg);
       // console.log(
       //   `${W}; ${testResult.edgeCrossings}; ${
