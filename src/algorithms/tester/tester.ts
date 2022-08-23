@@ -10,12 +10,16 @@ export function test(
   totalEdgeLength: number;
   maxEdgeLength: number;
   proportions: number;
+  numberOfBends: number;
+  maxNumberOfBends: number;
 } {
   const edgeCrossings = getEdgeCrossings(dataset);
   const graphSize = getGraphSize(dataset);
   const totalEdgeLength = getTotalEdgeLength(dataset, svg);
   const maxEdgeLength = getMaxEdgeLength(dataset, svg);
   const proportions = getProportions(dataset);
+  const numberOfBends = getNumberOfBends(dataset);
+  const maxNumberOfBends = getMaxNumberOfBends(dataset);
 
   return {
     edgeCrossings,
@@ -23,6 +27,8 @@ export function test(
     totalEdgeLength,
     maxEdgeLength,
     proportions,
+    numberOfBends,
+    maxNumberOfBends,
   };
 }
 
@@ -156,4 +162,19 @@ function linesIntersection(line1, line2): number {
       det;
     return 0 < lambda && lambda < 1 && 0 < gamma && gamma < 1 ? 1 : 0;
   }
+}
+
+function getNumberOfBends(dataset: Dataset): number {
+  return dataset.links.reduce(
+    (total, link) => total + link.bendPoints.length,
+    0
+  );
+}
+
+function getMaxNumberOfBends(dataset: Dataset): number {
+  return dataset.links.reduce(
+    (total, link) =>
+      total > link.bendPoints.length ? total : link.bendPoints.length,
+    0
+  );
 }

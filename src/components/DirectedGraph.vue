@@ -7,7 +7,7 @@ import { defineComponent } from 'vue';
 import { mapActions, mapGetters } from 'vuex';
 import { HEIGHT, WIDTH } from '@/utils/consts';
 import { graphPlacement } from '@/algorithms/graphPlacement/graphPlacement';
-import { graph1, graph2, graph3 } from '@/assets/testGraphDefinitions';
+import { graph2 } from '@/assets/testGraphDefinitions';
 import { getAllPossibleAggregations } from '@/algorithms/nodeAggregation/nodeAggregation';
 
 export default defineComponent({

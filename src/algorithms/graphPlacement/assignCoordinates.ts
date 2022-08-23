@@ -1,13 +1,14 @@
-import { MARGIN_HORIZONTAL, MARGIN_VERTICAL, NODE_SIZE } from '@/utils/consts';
+import { NODE_SIZE } from '@/utils/consts';
 import _ from 'lodash';
 export function assignCoordinates(
   layers: Array<Array<number>>,
   adjacencyList: Record<number, Array<number>>,
   reversedAdjacencyList: Record<number, Array<number>>,
   dummyVerticesArray: Array<number>,
-  pathsWithDummyVertices: Record<number, Array<number>>
+  pathsWithDummyVertices: Record<number, Array<number>>,
+  minSeparation: number
 ): Record<number, { x: number; y: number }> {
-  const coordinates = getInitialCoordinates(layers, dummyVerticesArray);
+  const coordinates = getInitialCoordinates(layers, minSeparation);
 
   const vertexList: Array<number> = Object.keys(adjacencyList)
     .map((e) => parseInt(e))
@@ -18,7 +19,8 @@ export function assignCoordinates(
     vertexList,
     reversedAdjacencyList,
     adjacencyList,
-    dummyVerticesArray
+    dummyVerticesArray,
+    minSeparation
   );
   alignment.map((x, i) => (coordinates[i].x = x));
 
@@ -141,9 +143,9 @@ function horizontalCompaction(
   vertexList: Array<number>,
   root: Array<number>,
   align: Array<number>,
-  layers: Array<Array<number>>
+  layers: Array<Array<number>>,
+  minSeparation: number
 ): Array<number> {
-  const minSeparation = MARGIN_HORIZONTAL;
   const sink: Array<number> = _.cloneDeep(vertexList);
   const shift: Array<number> = vertexList.map(() => Infinity);
   const x: Array<any> = vertexList.map(() => undefined);
@@ -197,7 +199,8 @@ function getCoordinates(
   vertexList: Array<number>,
   reversedAdjacencyList: Record<number, Array<number>>,
   adjacencyList: Record<number, Array<number>>,
-  dummyVerticesArray: Array<number>
+  dummyVerticesArray: Array<number>,
+  minSeparation: number
 ) {
   const preprocessed = preprocessing(
     layers,
@@ -215,7 +218,9 @@ function getCoordinates(
         reversedAdjacencyList,
         [vertical, horizontal]
       );
-      xCoordinates.push(horizontalCompaction(vertexList, root, align, layers));
+      xCoordinates.push(
+        horizontalCompaction(vertexList, root, align, layers, minSeparation)
+      );
     }
   }
   const xMin = Math.abs(
@@ -244,20 +249,14 @@ function getCoordinates(
 
 function getInitialCoordinates(
   layers: Array<Array<number>>,
-  dummyVerticesArray: Array<number>
+  minSeparation
 ): Record<number, { x: number; y: number }> {
   const initialCoordinates = {};
   layers.map((layer, layerIndex) => {
-    let distance = 0;
     layer.map((vertex) => {
-      if (dummyVerticesArray.includes(vertex)) {
-        distance += (1 / 4) * MARGIN_HORIZONTAL + NODE_SIZE / 2;
-      } else {
-        distance += MARGIN_HORIZONTAL;
-      }
       initialCoordinates[vertex] = {
-        x: distance,
-        y: (layerIndex + 1) * MARGIN_VERTICAL,
+        x: 0,
+        y: layerIndex * minSeparation + NODE_SIZE * 2,
       };
     });
   });

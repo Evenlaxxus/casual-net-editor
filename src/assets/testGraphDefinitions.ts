@@ -135,3 +135,180 @@ export const graph3 = [
     outgoing: [],
   },
 ];
+
+export const ANDgraph = [
+  {
+    id: 0,
+    name: 'a',
+    incoming: [],
+    outgoing: [[1, 2]],
+  },
+  {
+    id: 1,
+    name: 'b',
+    incoming: [[0]],
+    outgoing: [[3]],
+  },
+  {
+    id: 2,
+    name: 'c',
+    incoming: [[0]],
+    outgoing: [[3]],
+  },
+  {
+    id: 3,
+    name: 'd',
+    incoming: [[1, 2]],
+    outgoing: [],
+  },
+];
+
+export const ORgraph = [
+  {
+    id: 0,
+    name: 'a',
+    incoming: [],
+    outgoing: [[1], [2], [1, 2]],
+  },
+  {
+    id: 1,
+    name: 'b',
+    incoming: [[0]],
+    outgoing: [[3]],
+  },
+  {
+    id: 2,
+    name: 'c',
+    incoming: [[0]],
+    outgoing: [[3]],
+  },
+  {
+    id: 3,
+    name: 'd',
+    incoming: [[1], [2], [1, 2]],
+    outgoing: [],
+  },
+];
+
+export const XORgraph = [
+  {
+    id: 0,
+    name: 'a',
+    incoming: [],
+    outgoing: [[1], [2]],
+  },
+  {
+    id: 1,
+    name: 'b',
+    incoming: [[0]],
+    outgoing: [[3]],
+  },
+  {
+    id: 2,
+    name: 'c',
+    incoming: [[0]],
+    outgoing: [[3]],
+  },
+  {
+    id: 3,
+    name: 'd',
+    incoming: [[1], [2]],
+    outgoing: [],
+  },
+];
+
+export const long = [
+  {
+    id: 0,
+    name: 'a',
+    incoming: [],
+    outgoing: [[1]],
+  },
+  {
+    id: 1,
+    name: 'b',
+    incoming: [[0]],
+    outgoing: [[2]],
+  },
+  {
+    id: 2,
+    name: 'c',
+    incoming: [[1]],
+    outgoing: [[3]],
+  },
+  {
+    id: 3,
+    name: 'd',
+    incoming: [[2]],
+    outgoing: [[4]],
+  },
+  {
+    id: 4,
+    name: 'e',
+    incoming: [[3]],
+    outgoing: [[5]],
+  },
+  {
+    id: 5,
+    name: 'f',
+    incoming: [[4]],
+    outgoing: [[6]],
+  },
+  {
+    id: 6,
+    name: 'g',
+    incoming: [[5]],
+    outgoing: [],
+  },
+];
+
+export const parallel = [
+  {
+    id: 0,
+    name: 'a',
+    incoming: [],
+    outgoing: [[1], [2]],
+  },
+  {
+    id: 1,
+    name: 'b',
+    incoming: [[0]],
+    outgoing: [[3]],
+  },
+  {
+    id: 2,
+    name: 'c',
+    incoming: [[0]],
+    outgoing: [[4]],
+  },
+  {
+    id: 3,
+    name: 'd',
+    incoming: [[1]],
+    outgoing: [[5]],
+  },
+  {
+    id: 4,
+    name: 'e',
+    incoming: [[2]],
+    outgoing: [[6]],
+  },
+  {
+    id: 5,
+    name: 'f',
+    incoming: [[3]],
+    outgoing: [[7]],
+  },
+  {
+    id: 6,
+    name: 'g',
+    incoming: [[4]],
+    outgoing: [[7]],
+  },
+  {
+    id: 7,
+    name: 'i',
+    incoming: [[5], [6]],
+    outgoing: [],
+  },
+];

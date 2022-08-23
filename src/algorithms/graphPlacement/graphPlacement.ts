@@ -8,6 +8,7 @@ import {
   restoreCycles,
 } from '@/algorithms/graphPlacement/removeCycles';
 import { createAdjacencyList, permutations } from '@/utils/helpers';
+import { NODE_SIZE, RADIUS_CONST } from '@/utils/consts';
 
 export function graphPlacement(
   graph: Array<{
@@ -66,12 +67,15 @@ export function graphPlacement(
     adjacencyListWithDummyVertices
   );
 
+  const minSeparation = getMinSeparation(graph);
+
   const coordinates = assignCoordinates(
     sortedLayers,
     adjacencyListWithDummyVertices,
     reversedAdjacencyListWithDummyVertices,
     dummyVerticesArray,
-    pathsWithDummyVertices
+    pathsWithDummyVertices,
+    minSeparation
   );
 
   const dataset = mapToDataset(
@@ -242,4 +246,31 @@ function calculateDelta(
   }
 
   return totalLength;
+}
+
+function getMinSeparation(
+  graph: Array<{
+    id: number;
+    name: string;
+    incoming: Array<Array<number>>;
+    outgoing: Array<Array<number>>;
+  }>
+): number {
+  return (
+    2 *
+      RADIUS_CONST *
+      graph.reduce((maxBindings, e) => {
+        if (e.incoming.length > e.outgoing.length) {
+          return maxBindings < e.incoming.length
+            ? e.incoming.length
+            : maxBindings;
+        } else {
+          return maxBindings < e.outgoing.length
+            ? e.outgoing.length
+            : maxBindings;
+        }
+      }, 1) +
+    15 +
+    2 * NODE_SIZE
+  );
 }
